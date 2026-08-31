@@ -99,3 +99,121 @@ create policy "videos_actualizacion_autenticados" on storage.objects
 
 create policy "videos_borrado_autenticados" on storage.objects
   for delete using (bucket_id = 'product-videos' and auth.role() = 'authenticated');
+
+-- ============================================================
+-- CUENTAS DE CLIENTE + SEGURIDAD ADMIN vs CLIENTE
+-- ============================================================
+-- Hasta ahora, "estar logueado" (auth.role() = 'authenticated') era suficiente
+-- para editar el catálogo, porque el único que iniciaba sesión eras tú. Ahora que
+-- los CLIENTES también pueden crear cuenta e iniciar sesión, esa regla ya no es
+-- segura: cualquier cliente logueado podría editar productos/categorías/ajustes.
+-- Por eso creamos una tabla "admins" y una función is_admin(), y cambiamos las
+-- reglas de escritura del catálogo para que dependan de estar en esa tabla, no
+-- solo de tener sesión iniciada.
+
+create table admins (
+  id uuid primary key references auth.users(id) on delete cascade
+);
+alter table admins enable row level security;
+
+-- Un usuario puede consultar SOLO si su propia cuenta está en la tabla (para que
+-- la tienda sepa si debe mostrarle el panel de admin), pero no puede ver ni
+-- modificar la lista de administradores.
+create policy "admins_lectura_propia" on admins
+  for select using (id = auth.uid());
+
+create or replace function is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from admins where id = auth.uid());
+$$;
+
+-- Reemplaza las reglas de escritura del catálogo: de "autenticado" a "admin real".
+drop policy "categorias_escritura_autenticados" on categories;
+drop policy "categorias_actualizacion_autenticados" on categories;
+drop policy "categorias_borrado_autenticados" on categories;
+create policy "categorias_escritura_admin" on categories
+  for insert with check (is_admin());
+create policy "categorias_actualizacion_admin" on categories
+  for update using (is_admin());
+create policy "categorias_borrado_admin" on categories
+  for delete using (is_admin());
+
+drop policy "productos_escritura_autenticados" on products;
+drop policy "productos_actualizacion_autenticados" on products;
+drop policy "productos_borrado_autenticados" on products;
+create policy "productos_escritura_admin" on products
+  for insert with check (is_admin());
+create policy "productos_actualizacion_admin" on products
+  for update using (is_admin());
+create policy "productos_borrado_admin" on products
+  for delete using (is_admin());
+
+drop policy "ajustes_actualizacion_autenticados" on settings;
+create policy "ajustes_actualizacion_admin" on settings
+  for update using (is_admin());
+
+drop policy "videos_subida_autenticados" on storage.objects;
+drop policy "videos_actualizacion_autenticados" on storage.objects;
+drop policy "videos_borrado_autenticados" on storage.objects;
+create policy "videos_subida_admin" on storage.objects
+  for insert with check (bucket_id = 'product-videos' and is_admin());
+create policy "videos_actualizacion_admin" on storage.objects
+  for update using (bucket_id = 'product-videos' and is_admin());
+create policy "videos_borrado_admin" on storage.objects
+  for delete using (bucket_id = 'product-videos' and is_admin());
+
+-- ---------- Perfil del cliente (nombre y WhatsApp guardados) ----------
+create table customer_profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  name text,
+  whatsapp text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table customer_profiles enable row level security;
+
+create policy "perfil_lectura_propia" on customer_profiles
+  for select using (id = auth.uid());
+create policy "perfil_escritura_propia" on customer_profiles
+  for insert with check (id = auth.uid());
+create policy "perfil_actualizacion_propia" on customer_profiles
+  for update using (id = auth.uid());
+
+-- ---------- Pedidos (historial de compras + carrito pendiente) ----------
+-- status = 'cart'          -> carrito guardado, todavía no enviado/pagado
+-- status = 'whatsapp_sent' -> el cliente presionó "Enviar pedido por WhatsApp"
+-- status = 'paypal_paid'   -> pago confirmado con PayPal
+create table orders (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references auth.users(id) on delete cascade,
+  items jsonb not null default '[]'::jsonb,
+  total numeric not null default 0,
+  status text not null default 'cart' check (status in ('cart','whatsapp_sent','paypal_paid')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Como mucho un carrito "activo" (status='cart') por cliente a la vez.
+create unique index orders_carrito_unico_por_cliente on orders(customer_id) where status = 'cart';
+
+alter table orders enable row level security;
+create policy "pedidos_lectura_propia" on orders
+  for select using (customer_id = auth.uid());
+create policy "pedidos_escritura_propia" on orders
+  for insert with check (customer_id = auth.uid());
+create policy "pedidos_actualizacion_propia" on orders
+  for update using (customer_id = auth.uid());
+
+-- ---------- Márcate a ti mismo como administrador ----------
+-- ⚠️ MUY IMPORTANTE: reemplaza el correo de abajo por el correo EXACTO con el
+-- que inicias sesión en "Modo administrador" en la tienda, y corre este bloque
+-- UNA SOLA VEZ. Si no corres esto, perderás la capacidad de editar el catálogo
+-- (nadie va a cumplir is_admin() todavía).
+insert into admins (id)
+select id from auth.users where email = 'TU-CORREO-DE-ADMIN-AQUI@ejemplo.com'
+on conflict (id) do nothing;

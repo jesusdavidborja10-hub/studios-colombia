@@ -60,6 +60,23 @@
     height:3px;
     background:linear-gradient(90deg, var(--gold) 0 50%, var(--blue) 50% 75%, var(--red) 75% 100%);
   }
+  .btn-account{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:12px;
+    font-weight:700;
+    padding:8px 14px;
+    cursor:pointer;
+    white-space:nowrap;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .btn-account:hover{border-color:var(--gold); color:var(--gold);}
+  @media (max-width:520px){
+    .tagline-desktop{display:none;}
+  }
 
   /* ---------- HERO / PROMO ---------- */
   .promo{
@@ -483,13 +500,95 @@
   .msg.err{color:var(--red);}
   .msg.ok{color:var(--gold);}
   .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+
+  /* ---------- CUSTOMER ACCOUNT ---------- */
+  .btn-google{
+    width:100%;
+    background:#fff;
+    color:#1f1f1f;
+    border:1px solid var(--border);
+    padding:12px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    margin-top:16px;
+  }
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:18px 0;
+    color:var(--muted);
+    font-size:11px;
+  }
+  .auth-divider::before, .auth-divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
+  .auth-toggle{
+    text-align:center;
+    margin-top:12px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .auth-toggle button{
+    background:none;
+    border:none;
+    color:var(--blue);
+    text-decoration:underline;
+    cursor:pointer;
+    font-size:12px;
+    padding:0;
+  }
+  #custQuickFields{margin-bottom:12px;}
+  #custQuickFields input{
+    width:100%;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:9px 10px;
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+    margin-bottom:8px;
+  }
+  #pendingCartNotice{
+    background:rgba(244,185,66,0.1);
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:10px 12px;
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .order-card{
+    border:1px solid var(--border);
+    padding:10px 12px;
+    margin-bottom:10px;
+    font-size:12px;
+  }
+  .order-card .order-date{color:var(--muted);font-size:11px;margin-bottom:4px;}
+  .order-card .order-channel{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    padding:2px 6px;
+    border:1px solid var(--border);
+    margin-left:6px;
+    color:var(--blue);
+  }
+  .order-card .order-total{color:var(--gold);font-weight:700;margin-top:6px;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo"><span>▸</span><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
-  <div style="font-size:13px;color:var(--muted)">Catálogo de animaciones</div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="font-size:13px;color:var(--muted)" class="tagline-desktop">Catálogo de animaciones</div>
+    <button id="accountBtn" class="btn-account">Iniciar sesión</button>
+  </div>
 </header>
 
 <div class="promo" id="promoBanner"></div>
@@ -513,6 +612,7 @@
 <div id="cartPanel">
   <button id="closeCart">✕</button>
   <h3>Tu pedido</h3>
+  <div id="pendingCartNotice" style="display:none;">🛒 Recuperamos tu pedido pendiente guardado.</div>
   <div id="cartItems"></div>
   <div id="cartEmpty" style="color:var(--muted);font-size:13px;">Aún no has agregado nada.</div>
   <div id="cartTotal" style="display:none;"><span>Total</span><span id="cartTotalValue">$0</span></div>
@@ -525,6 +625,10 @@
           <div class="pay-title">¿Estás en Colombia?</div>
           <div class="pay-sub">Paga por WhatsApp — coordina Nequi, transferencia, etc. directo conmigo.</div>
         </div>
+      </div>
+      <div id="custQuickFields" style="display:none;">
+        <input type="text" id="quickName" placeholder="Tu nombre">
+        <input type="text" id="quickWhats" placeholder="Tu WhatsApp (con código de país)">
       </div>
       <button id="sendWhatsapp">Enviar pedido por WhatsApp</button>
     </div>
@@ -552,6 +656,58 @@
     <div id="paypalMsg" class="msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn-secondary" id="closePaypalModal" style="flex:1;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer account modal -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-box">
+    <!-- Logged out: login / signup -->
+    <div id="accountLoggedOut">
+      <h3 id="accountAuthTitle">Iniciar sesión</h3>
+      <div class="field">
+        <label>Correo</label>
+        <input type="text" id="custEmail" placeholder="tucorreo@ejemplo.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="custPassword" placeholder="Escribe tu contraseña">
+      </div>
+      <div id="accountAuthMsg" class="msg err" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="custAuthSubmit">Iniciar sesión</button>
+        <button class="btn-secondary" id="accountCloseBtn1">Cerrar</button>
+      </div>
+      <div class="auth-toggle">
+        <span id="accountAuthToggleText">¿No tienes cuenta?</span>
+        <button id="accountAuthToggleBtn">Regístrate</button>
+      </div>
+      <div class="auth-divider">o</div>
+      <button id="googleLoginBtn" class="btn-google">Continuar con Google</button>
+    </div>
+
+    <!-- Logged in: profile + order history -->
+    <div id="accountLoggedIn" style="display:none;">
+      <h3>Mi cuenta</h3>
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="custName" placeholder="Tu nombre">
+      </div>
+      <div class="field">
+        <label>WhatsApp (con código de país, sin +)</label>
+        <input type="text" id="custWhats" placeholder="573001234567">
+      </div>
+      <div id="profileMsg" class="msg" style="display:none;"></div>
+      <button class="btn-primary" id="saveProfileBtn" style="width:100%;">Guardar datos</button>
+
+      <h3 style="margin-top:26px;">Mis pedidos</h3>
+      <div id="ordersList"></div>
+
+      <div class="modal-actions" style="margin-top:20px;">
+        <button class="btn-secondary" id="accountCloseBtn2" style="flex:1;">Cerrar</button>
+        <button class="btn-secondary" id="custLogoutBtn" style="flex:1;color:var(--red);">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 </div>
@@ -673,6 +829,13 @@ let categories = []; // {id, name}
 let activeCategory = null; // null = "Todas"
 let cart = []; // {id, qty}
 
+// ---------- Customer accounts state ----------
+let currentUser = null;
+let customerProfile = { name: "", whatsapp: "" };
+let customerCartOrderId = null; // id of the active 'cart'-status row in `orders`, if any
+let pendingCartRestored = false;
+let authMode = "login"; // "login" | "signup"
+
 function formatPrice(n){
   const num = Number(n) || 0;
   return "$" + num.toLocaleString("es-CO");
@@ -777,6 +940,7 @@ function addToCart(id){
   if(existing){ existing.qty += 1; }
   else{ cart.push({id, qty:1}); }
   renderCart();
+  syncCartToServer();
 }
 
 function changeQty(id, delta){
@@ -785,11 +949,13 @@ function changeQty(id, delta){
   item.qty += delta;
   if(item.qty <= 0){ cart = cart.filter(c => c.id !== id); }
   renderCart();
+  syncCartToServer();
 }
 
 function removeFromCart(id){
   cart = cart.filter(c => c.id !== id);
   renderCart();
+  syncCartToServer();
 }
 
 function cartTotal(){
@@ -811,18 +977,21 @@ function renderCart(){
   const emptyEl = document.getElementById("cartEmpty");
   const totalEl = document.getElementById("cartTotal");
   const paymentBlocks = document.getElementById("paymentBlocks");
+  const noticeEl = document.getElementById("pendingCartNotice");
 
   if(cart.length === 0){
     itemsEl.innerHTML = "";
     emptyEl.style.display = "block";
     totalEl.style.display = "none";
     paymentBlocks.style.display = "none";
+    noticeEl.style.display = "none";
     return;
   }
 
   emptyEl.style.display = "none";
   totalEl.style.display = "flex";
   paymentBlocks.style.display = "flex";
+  noticeEl.style.display = pendingCartRestored ? "block" : "none";
   document.getElementById("usdTotalValue").textContent = "US$" + cartTotalUSD();
 
   itemsEl.innerHTML = cart.map(c => {
@@ -847,9 +1016,26 @@ function renderCart(){
   document.getElementById("cartTotalValue").textContent = formatPrice(cartTotal());
 }
 
-function sendOrderWhatsapp(){
+async function sendOrderWhatsapp(){
   if(cart.length === 0) return;
-  let msg = `Hola! Quiero pedir estas animaciones:\n\n`;
+
+  let senderLine = "";
+  if(currentUser){
+    let name = customerProfile.name;
+    let whats = customerProfile.whatsapp;
+    if(!name || !whats){
+      const inputName = document.getElementById("quickName").value.trim();
+      const inputWhats = document.getElementById("quickWhats").value.trim();
+      name = name || inputName;
+      whats = whats || inputWhats;
+      if(inputName || inputWhats){
+        await saveCustomerProfile({ name: name || null, whatsapp: whats || null });
+      }
+    }
+    if(name) senderLine = `Hola, soy ${name}${whats ? " (WhatsApp: " + whats + ")" : ""}.\n`;
+  }
+
+  let msg = `${senderLine}Hola! Quiero pedir estas animaciones:\n\n`;
   cart.forEach(c => {
     const p = products.find(pr => pr.id === c.id);
     if(!p) return;
@@ -858,6 +1044,11 @@ function sendOrderWhatsapp(){
   msg += `\nTotal: ${formatPrice(cartTotal())}`;
   const url = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(msg)}`;
   window.open(url, "_blank");
+
+  await finalizeServerOrder("whatsapp_sent");
+  cart = [];
+  pendingCartRestored = false;
+  renderCart();
 }
 
 // ---------- PayPal ----------
@@ -892,6 +1083,10 @@ async function ensurePaypalButtons(){
         msgEl.className = "msg ok";
         msgEl.textContent = `¡Pago recibido${name ? ", " + name : ""}! Guarda tu recibo, te contactaremos para enviarte tu animación.`;
         msgEl.style.display = "block";
+        await finalizeServerOrder("paypal_paid");
+        cart = [];
+        pendingCartRestored = false;
+        renderCart();
       },
       onError: () => {
         msgEl.className = "msg err";
@@ -947,6 +1142,144 @@ async function uploadVideo(file){
   const { data } = sb.storage.from(VIDEO_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
+
+// ---------- Customer accounts ----------
+async function checkIsAdmin(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return false;
+  const { data } = await sb.from("admins").select("id").eq("id", user.id).maybeSingle();
+  return !!data;
+}
+
+async function loadCustomerProfile(){
+  if(!currentUser){ customerProfile = { name: "", whatsapp: "" }; return; }
+  const { data } = await sb.from("customer_profiles").select("name,whatsapp").eq("id", currentUser.id).maybeSingle();
+  customerProfile = { name: data?.name || "", whatsapp: data?.whatsapp || "" };
+}
+
+async function saveCustomerProfile(fields){
+  if(!currentUser) return false;
+  const { error } = await sb.from("customer_profiles").upsert({
+    id: currentUser.id,
+    name: fields.name,
+    whatsapp: fields.whatsapp,
+    updated_at: new Date().toISOString()
+  });
+  if(!error){
+    customerProfile = { ...customerProfile, ...fields };
+    updateAccountUI();
+  }
+  return !error;
+}
+
+function mergeCarts(a, b){
+  const merged = a.map(x => ({ ...x }));
+  b.forEach(bi => {
+    const existing = merged.find(m => m.id === bi.id);
+    if(existing){ existing.qty += bi.qty; }
+    else{ merged.push({ ...bi }); }
+  });
+  return merged;
+}
+
+async function restoreServerCart(){
+  if(!currentUser){ customerCartOrderId = null; return; }
+  const { data } = await sb.from("orders").select("id,items").eq("customer_id", currentUser.id).eq("status","cart").maybeSingle();
+  if(data && Array.isArray(data.items) && data.items.length){
+    customerCartOrderId = data.id;
+    const serverItems = data.items.map(i => ({ id: i.product_id, qty: i.qty }));
+    cart = mergeCarts(cart, serverItems);
+    pendingCartRestored = true;
+    await syncCartToServer();
+  }else{
+    customerCartOrderId = data ? data.id : null;
+  }
+  renderCart();
+}
+
+async function syncCartToServer(){
+  if(!currentUser) return;
+  if(cart.length === 0){
+    if(customerCartOrderId){
+      await sb.from("orders").delete().eq("id", customerCartOrderId);
+      customerCartOrderId = null;
+    }
+    return;
+  }
+  const items = cart.map(c => {
+    const p = products.find(pr => pr.id === c.id);
+    return { product_id: c.id, name: p ? p.name : "", price: p ? Number(p.price) : 0, qty: c.qty };
+  });
+  const total = cartTotal();
+  if(customerCartOrderId){
+    await sb.from("orders").update({ items, total, updated_at: new Date().toISOString() }).eq("id", customerCartOrderId);
+  }else{
+    const { data, error } = await sb.from("orders").insert({ customer_id: currentUser.id, items, total, status: "cart" }).select().single();
+    if(!error) customerCartOrderId = data.id;
+  }
+}
+
+async function finalizeServerOrder(status){
+  if(!currentUser || !customerCartOrderId) return;
+  await sb.from("orders").update({ status, updated_at: new Date().toISOString() }).eq("id", customerCartOrderId);
+  customerCartOrderId = null;
+}
+
+async function renderOrderHistory(){
+  const el = document.getElementById("ordersList");
+  el.innerHTML = '<div class="hint">Cargando...</div>';
+  const { data, error } = await sb.from("orders")
+    .select("*")
+    .eq("customer_id", currentUser.id)
+    .neq("status", "cart")
+    .order("created_at", { ascending: false });
+  if(error || !data || data.length === 0){
+    el.innerHTML = '<div class="hint">Todavía no tienes pedidos.</div>';
+    return;
+  }
+  el.innerHTML = data.map(o => {
+    const date = new Date(o.created_at).toLocaleDateString("es-CO", { day:"numeric", month:"short", year:"numeric" });
+    const channelLabel = o.status === "paypal_paid" ? "PayPal" : "WhatsApp";
+    const itemsHtml = (o.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
+    return `
+      <div class="order-card">
+        <div class="order-date">${date}<span class="order-channel">${channelLabel}</span></div>
+        <div>${itemsHtml}</div>
+        <div class="order-total">${formatPrice(o.total)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateQuickFieldsVisibility(){
+  const el = document.getElementById("custQuickFields");
+  if(!el) return;
+  const needsInfo = currentUser && (!customerProfile.name || !customerProfile.whatsapp);
+  el.style.display = needsInfo ? "block" : "none";
+}
+
+function updateAccountUI(){
+  const btn = document.getElementById("accountBtn");
+  btn.textContent = currentUser ? ("👤 " + (customerProfile.name || "Mi cuenta")) : "Iniciar sesión";
+  updateQuickFieldsVisibility();
+}
+
+async function handleAuthChange(session){
+  if(session && session.user){
+    currentUser = session.user;
+    await loadCustomerProfile();
+    await restoreServerCart();
+  }else{
+    currentUser = null;
+    customerProfile = { name: "", whatsapp: "" };
+    customerCartOrderId = null;
+  }
+  updateAccountUI();
+}
+
+sb.auth.onAuthStateChange((event, session) => {
+  handleAuthChange(session);
+});
 
 // ---------- Admin list ----------
 function renderAdminList(){
@@ -1007,6 +1340,10 @@ document.getElementById("overlay").addEventListener("click", closeCart);
 function closeCart(){
   document.getElementById("overlay").style.display = "none";
   document.getElementById("cartPanel").style.display = "none";
+  if(pendingCartRestored){
+    pendingCartRestored = false;
+    renderCart();
+  }
 }
 
 document.getElementById("cartItems").addEventListener("click", (e) => {
@@ -1028,11 +1365,104 @@ document.getElementById("closePaypalModal").addEventListener("click", () => {
   document.getElementById("paypalModal").style.display = "none";
 });
 
-// admin toggle -> login (o directo si ya hay sesión activa)
+// ---------- Customer account UI ----------
+document.getElementById("accountBtn").addEventListener("click", async () => {
+  document.getElementById("accountAuthMsg").style.display = "none";
+  if(currentUser){
+    document.getElementById("accountLoggedOut").style.display = "none";
+    document.getElementById("accountLoggedIn").style.display = "block";
+    document.getElementById("custName").value = customerProfile.name || "";
+    document.getElementById("custWhats").value = customerProfile.whatsapp || "";
+    document.getElementById("profileMsg").style.display = "none";
+    renderOrderHistory();
+  }else{
+    authMode = "login";
+    document.getElementById("accountAuthTitle").textContent = "Iniciar sesión";
+    document.getElementById("custAuthSubmit").textContent = "Iniciar sesión";
+    document.getElementById("accountAuthToggleText").textContent = "¿No tienes cuenta?";
+    document.getElementById("accountAuthToggleBtn").textContent = "Regístrate";
+    document.getElementById("accountLoggedOut").style.display = "block";
+    document.getElementById("accountLoggedIn").style.display = "none";
+    document.getElementById("custEmail").value = "";
+    document.getElementById("custPassword").value = "";
+  }
+  document.getElementById("accountModal").style.display = "flex";
+});
+document.getElementById("accountCloseBtn1").addEventListener("click", () => {
+  document.getElementById("accountModal").style.display = "none";
+});
+document.getElementById("accountCloseBtn2").addEventListener("click", () => {
+  document.getElementById("accountModal").style.display = "none";
+});
+
+document.getElementById("accountAuthToggleBtn").addEventListener("click", () => {
+  authMode = authMode === "login" ? "signup" : "login";
+  document.getElementById("accountAuthTitle").textContent = authMode === "login" ? "Iniciar sesión" : "Crear cuenta";
+  document.getElementById("custAuthSubmit").textContent = authMode === "login" ? "Iniciar sesión" : "Crear cuenta";
+  document.getElementById("accountAuthToggleText").textContent = authMode === "login" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?";
+  document.getElementById("accountAuthToggleBtn").textContent = authMode === "login" ? "Regístrate" : "Inicia sesión";
+  document.getElementById("accountAuthMsg").style.display = "none";
+});
+
+document.getElementById("custAuthSubmit").addEventListener("click", async () => {
+  const email = document.getElementById("custEmail").value.trim();
+  const password = document.getElementById("custPassword").value;
+  const msgEl = document.getElementById("accountAuthMsg");
+  if(!email || !password){
+    msgEl.className = "msg err";
+    msgEl.textContent = "Completa correo y contraseña.";
+    msgEl.style.display = "block";
+    return;
+  }
+  const result = authMode === "login"
+    ? await sb.auth.signInWithPassword({ email, password })
+    : await sb.auth.signUp({ email, password });
+
+  if(result.error){
+    msgEl.className = "msg err";
+    msgEl.textContent = authMode === "login"
+      ? "Correo o contraseña incorrectos."
+      : "No se pudo crear la cuenta. Verifica el correo o intenta con otro.";
+    msgEl.style.display = "block";
+    return;
+  }
+  if(authMode === "signup" && !result.data.session){
+    msgEl.className = "msg ok";
+    msgEl.textContent = "¡Cuenta creada! Revisa tu correo para confirmarla antes de iniciar sesión.";
+    msgEl.style.display = "block";
+    return;
+  }
+  document.getElementById("accountModal").style.display = "none";
+});
+
+document.getElementById("googleLoginBtn").addEventListener("click", async () => {
+  await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
+});
+
+document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+  const msgEl = document.getElementById("profileMsg");
+  const name = document.getElementById("custName").value.trim();
+  const whatsapp = document.getElementById("custWhats").value.trim().replace(/[^0-9]/g,"");
+  const ok = await saveCustomerProfile({ name: name || null, whatsapp: whatsapp || null });
+  msgEl.className = ok ? "msg ok" : "msg err";
+  msgEl.textContent = ok ? "Datos guardados." : "No se pudieron guardar los datos.";
+  msgEl.style.display = "block";
+});
+
+document.getElementById("custLogoutBtn").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  document.getElementById("accountModal").style.display = "none";
+});
+
+// admin toggle -> login (o directo si ya hay sesión de administrador activa)
 document.getElementById("adminToggle").addEventListener("click", async () => {
   const { data: { session } } = await sb.auth.getSession();
   if(session){
-    openAdmin();
+    if(await checkIsAdmin()){
+      openAdmin();
+    }else{
+      alert("Esta cuenta no tiene permisos de administrador.");
+    }
     return;
   }
   document.getElementById("pwEmail").value = "";
