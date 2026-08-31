@@ -111,7 +111,7 @@ create policy "videos_borrado_autenticados" on storage.objects
 -- reglas de escritura del catálogo para que dependan de estar en esa tabla, no
 -- solo de tener sesión iniciada.
 
-create table admins (
+create table if not exists admins (
   id uuid primary key references auth.users(id) on delete cascade
 );
 alter table admins enable row level security;
@@ -119,6 +119,7 @@ alter table admins enable row level security;
 -- Un usuario puede consultar SOLO si su propia cuenta está en la tabla (para que
 -- la tienda sepa si debe mostrarle el panel de admin), pero no puede ver ni
 -- modificar la lista de administradores.
+drop policy if exists "admins_lectura_propia" on admins;
 create policy "admins_lectura_propia" on admins
   for select using (id = auth.uid());
 
@@ -133,9 +134,14 @@ as $$
 $$;
 
 -- Reemplaza las reglas de escritura del catálogo: de "autenticado" a "admin real".
-drop policy "categorias_escritura_autenticados" on categories;
-drop policy "categorias_actualizacion_autenticados" on categories;
-drop policy "categorias_borrado_autenticados" on categories;
+-- (drop ... if exists por si ya corriste esta parte antes, o si la política
+-- original nunca llegó a crearse con ese nombre exacto)
+drop policy if exists "categorias_escritura_autenticados" on categories;
+drop policy if exists "categorias_actualizacion_autenticados" on categories;
+drop policy if exists "categorias_borrado_autenticados" on categories;
+drop policy if exists "categorias_escritura_admin" on categories;
+drop policy if exists "categorias_actualizacion_admin" on categories;
+drop policy if exists "categorias_borrado_admin" on categories;
 create policy "categorias_escritura_admin" on categories
   for insert with check (is_admin());
 create policy "categorias_actualizacion_admin" on categories
@@ -143,9 +149,12 @@ create policy "categorias_actualizacion_admin" on categories
 create policy "categorias_borrado_admin" on categories
   for delete using (is_admin());
 
-drop policy "productos_escritura_autenticados" on products;
-drop policy "productos_actualizacion_autenticados" on products;
-drop policy "productos_borrado_autenticados" on products;
+drop policy if exists "productos_escritura_autenticados" on products;
+drop policy if exists "productos_actualizacion_autenticados" on products;
+drop policy if exists "productos_borrado_autenticados" on products;
+drop policy if exists "productos_escritura_admin" on products;
+drop policy if exists "productos_actualizacion_admin" on products;
+drop policy if exists "productos_borrado_admin" on products;
 create policy "productos_escritura_admin" on products
   for insert with check (is_admin());
 create policy "productos_actualizacion_admin" on products
@@ -153,13 +162,17 @@ create policy "productos_actualizacion_admin" on products
 create policy "productos_borrado_admin" on products
   for delete using (is_admin());
 
-drop policy "ajustes_actualizacion_autenticados" on settings;
+drop policy if exists "ajustes_actualizacion_autenticados" on settings;
+drop policy if exists "ajustes_actualizacion_admin" on settings;
 create policy "ajustes_actualizacion_admin" on settings
   for update using (is_admin());
 
-drop policy "videos_subida_autenticados" on storage.objects;
-drop policy "videos_actualizacion_autenticados" on storage.objects;
-drop policy "videos_borrado_autenticados" on storage.objects;
+drop policy if exists "videos_subida_autenticados" on storage.objects;
+drop policy if exists "videos_actualizacion_autenticados" on storage.objects;
+drop policy if exists "videos_borrado_autenticados" on storage.objects;
+drop policy if exists "videos_subida_admin" on storage.objects;
+drop policy if exists "videos_actualizacion_admin" on storage.objects;
+drop policy if exists "videos_borrado_admin" on storage.objects;
 create policy "videos_subida_admin" on storage.objects
   for insert with check (bucket_id = 'product-videos' and is_admin());
 create policy "videos_actualizacion_admin" on storage.objects
@@ -168,7 +181,7 @@ create policy "videos_borrado_admin" on storage.objects
   for delete using (bucket_id = 'product-videos' and is_admin());
 
 -- ---------- Perfil del cliente (nombre y WhatsApp guardados) ----------
-create table customer_profiles (
+create table if not exists customer_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   name text,
   whatsapp text,
@@ -177,6 +190,9 @@ create table customer_profiles (
 );
 alter table customer_profiles enable row level security;
 
+drop policy if exists "perfil_lectura_propia" on customer_profiles;
+drop policy if exists "perfil_escritura_propia" on customer_profiles;
+drop policy if exists "perfil_actualizacion_propia" on customer_profiles;
 create policy "perfil_lectura_propia" on customer_profiles
   for select using (id = auth.uid());
 create policy "perfil_escritura_propia" on customer_profiles
@@ -188,7 +204,7 @@ create policy "perfil_actualizacion_propia" on customer_profiles
 -- status = 'cart'          -> carrito guardado, todavía no enviado/pagado
 -- status = 'whatsapp_sent' -> el cliente presionó "Enviar pedido por WhatsApp"
 -- status = 'paypal_paid'   -> pago confirmado con PayPal
-create table orders (
+create table if not exists orders (
   id uuid primary key default gen_random_uuid(),
   customer_id uuid not null references auth.users(id) on delete cascade,
   items jsonb not null default '[]'::jsonb,
@@ -199,9 +215,12 @@ create table orders (
 );
 
 -- Como mucho un carrito "activo" (status='cart') por cliente a la vez.
-create unique index orders_carrito_unico_por_cliente on orders(customer_id) where status = 'cart';
+create unique index if not exists orders_carrito_unico_por_cliente on orders(customer_id) where status = 'cart';
 
 alter table orders enable row level security;
+drop policy if exists "pedidos_lectura_propia" on orders;
+drop policy if exists "pedidos_escritura_propia" on orders;
+drop policy if exists "pedidos_actualizacion_propia" on orders;
 create policy "pedidos_lectura_propia" on orders
   for select using (customer_id = auth.uid());
 create policy "pedidos_escritura_propia" on orders
