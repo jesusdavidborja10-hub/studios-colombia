@@ -436,6 +436,19 @@
     font-size:22px;
     margin:0 0 16px 0;
   }
+  .btn-clear-cart{
+    align-self:flex-start;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:12px;
+    font-weight:600;
+    padding:7px 12px;
+    cursor:pointer;
+    margin-bottom:14px;
+    transition:border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn-clear-cart:hover{border-color:var(--red); color:var(--red);}
   #cartItems{
     flex:1;
     overflow-y:auto;
@@ -693,6 +706,7 @@
 <div id="cartPanel">
   <button id="closeCart">✕</button>
   <h3>Tu pedido</h3>
+  <button id="clearCartBtn" class="btn-clear-cart" style="display:none;">🗑️ Vaciar carrito</button>
   <div id="pendingCartNotice" style="display:none;">🛒 Recuperamos tu pedido pendiente guardado.</div>
   <div id="cartItems"></div>
   <div id="cartEmpty" style="color:var(--muted);font-size:13px;">Aún no has agregado nada.</div>
@@ -1098,6 +1112,15 @@ function removeFromCart(id){
   syncCartToServer();
 }
 
+function clearCart(){
+  if(cart.length === 0) return;
+  if(!confirm("¿Seguro que quieres vaciar tu carrito?")) return;
+  cart = [];
+  pendingCartRestored = false;
+  renderCart();
+  syncCartToServer();
+}
+
 function cartTotal(){
   return cart.reduce((sum, c) => {
     const p = products.find(pr => pr.id === c.id);
@@ -1114,6 +1137,7 @@ function renderCart(){
   const totalEl = document.getElementById("cartTotal");
   const paymentBlocks = document.getElementById("paymentBlocks");
   const noticeEl = document.getElementById("pendingCartNotice");
+  const clearBtn = document.getElementById("clearCartBtn");
 
   if(cart.length === 0){
     itemsEl.innerHTML = "";
@@ -1121,6 +1145,7 @@ function renderCart(){
     totalEl.style.display = "none";
     paymentBlocks.style.display = "none";
     noticeEl.style.display = "none";
+    clearBtn.style.display = "none";
     return;
   }
 
@@ -1128,6 +1153,7 @@ function renderCart(){
   totalEl.style.display = "flex";
   paymentBlocks.style.display = "flex";
   noticeEl.style.display = pendingCartRestored ? "block" : "none";
+  clearBtn.style.display = "inline-flex";
 
   itemsEl.innerHTML = cart.map(c => {
     const p = products.find(pr => pr.id === c.id);
@@ -1345,6 +1371,7 @@ document.getElementById("cartFab").addEventListener("click", () => {
 });
 document.getElementById("closeCart").addEventListener("click", closeCart);
 document.getElementById("overlay").addEventListener("click", closeCart);
+document.getElementById("clearCartBtn").addEventListener("click", clearCart);
 function closeCart(){
   document.getElementById("overlay").style.display = "none";
   document.getElementById("cartPanel").style.display = "none";
