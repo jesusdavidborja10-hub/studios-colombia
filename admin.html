@@ -134,6 +134,7 @@
     display:inline-flex;align-items:center;flex-shrink:0;
   }
   .video-upload-btn:hover{border-color:var(--blue);}
+  .admin-list-row button.edit-btn{color:var(--blue);}
 
   #loginSection{max-width:380px;margin:64px auto 0;}
 </style>
@@ -210,6 +211,34 @@
     </div>
 
     <div class="panel-section">
+      <h2>Personalizados y Precios</h2>
+
+      <h3 style="margin-top:0;">Opciones existentes</h3>
+      <div id="customOptionsList"></div>
+
+      <h3>Agregar / editar opción</h3>
+      <div class="field">
+        <label>Título</label>
+        <input type="text" id="coTitle" placeholder="Ej: Personalizado básico">
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <input type="text" id="coDescription" placeholder="Qué incluye esta opción">
+      </div>
+      <div class="field">
+        <label>Precio (número, ej: 25000)</label>
+        <input type="number" id="coPrice" placeholder="25000">
+      </div>
+      <div class="field">
+        <label>Link del video de ejemplo (opcional)</label>
+        <input type="text" id="coVideoUrl" placeholder="https://drive.google.com/... o https://youtube.com/...">
+        <div class="hint">Pega el link para compartir (Google Drive, YouTube, etc.). Se muestra embebido cuando es posible.</div>
+      </div>
+      <div id="coMsg" class="msg" style="display:none;"></div>
+      <button class="btn-primary" id="coAddBtn" style="width:100%;">Agregar opción</button>
+    </div>
+
+    <div class="panel-section">
       <h2>Ajustes de la tienda</h2>
       <div class="field">
         <label>Nombre de la tienda</label>
@@ -253,10 +282,16 @@ const DEFAULT_SETTINGS = {
 
 let products = [];
 let categories = [];
+let customOptions = [];
+let editingCustomOptionId = null;
 
 function formatPrice(n){
   const num = Number(n) || 0;
   return "$" + num.toLocaleString("es-CO");
+}
+
+function truncate(str, n){
+  return str.length > n ? str.slice(0, n - 1) + "…" : str;
 }
 
 // ---------- Admin check ----------
@@ -339,6 +374,42 @@ function renderCatManageList(){
   `).join("");
 }
 
+// ---------- Personalizados y Precios ----------
+async function loadCustomOptions(){
+  const { data, error } = await sb.from("custom_options")
+    .select("*")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  customOptions = error || !data ? [] : data;
+}
+
+function renderCustomOptionsList(){
+  const el = document.getElementById("customOptionsList");
+  if(customOptions.length === 0){
+    el.innerHTML = '<div class="hint">No hay opciones personalizadas todavía.</div>';
+    return;
+  }
+  el.innerHTML = customOptions.map(o => `
+    <div class="admin-list-row" style="align-items:flex-start;">
+      <div class="n">
+        <div style="font-weight:600;">${o.title} — ${formatPrice(o.price)}</div>
+        <div style="color:var(--muted);font-size:11px;margin-top:2px;">${truncate(o.description || "Sin descripción", 90)} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
+      </div>
+      <button class="edit-btn" data-editco="${o.id}">Editar</button>
+      <button data-delco="${o.id}">Eliminar</button>
+    </div>
+  `).join("");
+}
+
+function resetCustomOptionForm(){
+  editingCustomOptionId = null;
+  document.getElementById("coTitle").value = "";
+  document.getElementById("coDescription").value = "";
+  document.getElementById("coPrice").value = "";
+  document.getElementById("coVideoUrl").value = "";
+  document.getElementById("coAddBtn").textContent = "Agregar opción";
+}
+
 // ---------- Image compression ----------
 function compressImage(file){
   return new Promise((resolve, reject) => {
@@ -393,6 +464,8 @@ async function enterPanel(){
   document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
   renderCatManageList();
   renderAdminList();
+  await loadCustomOptions();
+  renderCustomOptionsList();
   await loadSettingsIntoForm();
 }
 
@@ -575,6 +648,90 @@ document.getElementById("catManageList").addEventListener("click", async (e) => 
   renderCatManageList();
   document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
   renderAdminList();
+});
+
+document.getElementById("coAddBtn").addEventListener("click", async () => {
+  const msgEl = document.getElementById("coMsg");
+  const title = document.getElementById("coTitle").value.trim();
+  const description = document.getElementById("coDescription").value.trim();
+  const price = document.getElementById("coPrice").value;
+  const videoUrl = document.getElementById("coVideoUrl").value.trim();
+
+  if(!title || !price){
+    msgEl.className = "msg err";
+    msgEl.textContent = "Completa al menos el título y el precio.";
+    msgEl.style.display = "block";
+    return;
+  }
+
+  const payload = {
+    title,
+    description: description || null,
+    price: Number(price),
+    video_url: videoUrl || null
+  };
+
+  if(editingCustomOptionId){
+    const { error } = await sb.from("custom_options").update(payload).eq("id", editingCustomOptionId);
+    if(error){
+      msgEl.className = "msg err";
+      msgEl.textContent = "No se pudo guardar el cambio.";
+      msgEl.style.display = "block";
+      return;
+    }
+    const idx = customOptions.findIndex(o => o.id === editingCustomOptionId);
+    if(idx !== -1) customOptions[idx] = { ...customOptions[idx], ...payload };
+    msgEl.className = "msg ok";
+    msgEl.textContent = "Cambios guardados.";
+    msgEl.style.display = "block";
+    resetCustomOptionForm();
+  }else{
+    const { data, error } = await sb.from("custom_options").insert({
+      ...payload,
+      display_order: customOptions.length
+    }).select().single();
+    if(error){
+      msgEl.className = "msg err";
+      msgEl.textContent = "No se pudo agregar la opción.";
+      msgEl.style.display = "block";
+      return;
+    }
+    customOptions.push(data);
+    msgEl.className = "msg ok";
+    msgEl.textContent = "¡Opción agregada!";
+    msgEl.style.display = "block";
+    resetCustomOptionForm();
+  }
+  renderCustomOptionsList();
+});
+
+document.getElementById("customOptionsList").addEventListener("click", async (e) => {
+  const editBtn = e.target.closest("button[data-editco]");
+  if(editBtn){
+    const opt = customOptions.find(o => o.id === editBtn.dataset.editco);
+    if(!opt) return;
+    editingCustomOptionId = opt.id;
+    document.getElementById("coTitle").value = opt.title;
+    document.getElementById("coDescription").value = opt.description || "";
+    document.getElementById("coPrice").value = opt.price;
+    document.getElementById("coVideoUrl").value = opt.video_url || "";
+    document.getElementById("coAddBtn").textContent = "Guardar cambios";
+    document.getElementById("coMsg").style.display = "none";
+    document.getElementById("coTitle").scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  const delBtn = e.target.closest("button[data-delco]");
+  if(delBtn){
+    const id = delBtn.dataset.delco;
+    const { error } = await sb.from("custom_options").delete().eq("id", id);
+    if(error) return;
+    customOptions = customOptions.filter(o => o.id !== id);
+    if(editingCustomOptionId === id){
+      resetCustomOptionForm();
+      document.getElementById("coMsg").style.display = "none";
+    }
+    renderCustomOptionsList();
+  }
 });
 
 document.getElementById("saveSettingsBtn").addEventListener("click", async () => {

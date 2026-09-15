@@ -228,6 +228,40 @@ create policy "pedidos_escritura_propia" on orders
 create policy "pedidos_actualizacion_propia" on orders
   for update using (customer_id = auth.uid());
 
+-- ============================================================
+-- PERSONALIZADOS Y PRECIOS (animaciones a la medida)
+-- ============================================================
+-- Mismo patrón de seguridad que "products": lectura pública para
+-- cualquier visitante, escritura (insert/update/delete) solo para
+-- administradores reales (tabla "admins" + función is_admin(), ya
+-- creada más arriba en este archivo).
+
+create table if not exists custom_options (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  price numeric not null,
+  video_url text,
+  display_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table custom_options enable row level security;
+
+drop policy if exists "personalizados_lectura_publica" on custom_options;
+drop policy if exists "personalizados_escritura_admin" on custom_options;
+drop policy if exists "personalizados_actualizacion_admin" on custom_options;
+drop policy if exists "personalizados_borrado_admin" on custom_options;
+
+create policy "personalizados_lectura_publica" on custom_options
+  for select using (true);
+create policy "personalizados_escritura_admin" on custom_options
+  for insert with check (is_admin());
+create policy "personalizados_actualizacion_admin" on custom_options
+  for update using (is_admin());
+create policy "personalizados_borrado_admin" on custom_options
+  for delete using (is_admin());
+
 -- ---------- Márcate a ti mismo como administrador ----------
 -- ⚠️ MUY IMPORTANTE: reemplaza el correo de abajo por el correo EXACTO con el
 -- que inicias sesión en "Modo administrador" en la tienda, y corre este bloque
