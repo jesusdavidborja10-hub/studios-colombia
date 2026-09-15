@@ -438,10 +438,9 @@
   .pay-block{
     background:var(--panel2);
     border:1px solid var(--border);
+    border-left:3px solid var(--gold);
     padding:14px;
   }
-  .pay-block-co{border-left:3px solid var(--gold);}
-  .pay-block-intl{border-left:3px solid var(--blue);}
   .pay-block-header{
     display:flex;
     align-items:flex-start;
@@ -452,30 +451,13 @@
   .pay-title{
     font-weight:800;
     font-size:14px;
+    color:var(--gold);
   }
-  .pay-block-co .pay-title{color:var(--gold);}
-  .pay-block-intl .pay-title{color:var(--blue);}
   .pay-sub{
     font-size:12px;
     color:var(--text);
     margin-top:3px;
     line-height:1.4;
-  }
-  .usd-total{
-    font-size:13px;
-    margin-bottom:10px;
-    color:var(--text);
-  }
-  .usd-total b{color:var(--blue);}
-  .btn-paypal{
-    width:100%;
-    background:var(--blue);
-    color:#fff;
-    border:none;
-    padding:14px;
-    font-weight:800;
-    font-size:14px;
-    cursor:pointer;
   }
   #closeCart{
     align-self:flex-end;
@@ -647,12 +629,12 @@
   <div id="cartTotal" style="display:none;"><span>Total</span><span id="cartTotalValue">$0</span></div>
 
   <div id="paymentBlocks" style="display:none;">
-    <div class="pay-block pay-block-co">
+    <div class="pay-block">
       <div class="pay-block-header">
-        <span class="flag">🇨🇴</span>
+        <span class="flag">💬</span>
         <div>
-          <div class="pay-title">¿Estás en Colombia?</div>
-          <div class="pay-sub">Paga por WhatsApp — coordina Nequi, transferencia, etc. directo conmigo.</div>
+          <div class="pay-title">Confirma tu pedido por WhatsApp</div>
+          <div class="pay-sub">Te contestamos al momento para coordinar el pago (Nequi, transferencia, tarjeta, etc.).</div>
         </div>
       </div>
       <div id="custQuickFields" style="display:none;">
@@ -660,31 +642,6 @@
         <input type="text" id="quickWhats" placeholder="Tu WhatsApp (con código de país)">
       </div>
       <button id="sendWhatsapp">Enviar pedido por WhatsApp</button>
-    </div>
-
-    <div class="pay-block pay-block-intl">
-      <div class="pay-block-header">
-        <span class="flag">🌎</span>
-        <div>
-          <div class="pay-title">¿Estás fuera de Colombia?</div>
-          <div class="pay-sub">Paga con PayPal — pago inmediato con tarjeta.</div>
-        </div>
-      </div>
-      <div class="usd-total">Total aprox: <b id="usdTotalValue">US$0.00</b></div>
-      <button id="openPaypalBtn" class="btn-paypal">Pagar con PayPal</button>
-    </div>
-  </div>
-</div>
-
-<!-- PayPal modal -->
-<div class="modal-overlay" id="paypalModal">
-  <div class="modal-box">
-    <h3>🌎 Pagar con PayPal</h3>
-    <div class="usd-total">Total a pagar: <b id="usdTotalValueModal">US$0.00</b></div>
-    <div id="paypal-button-container"></div>
-    <div id="paypalMsg" class="msg" style="display:none;"></div>
-    <div class="modal-actions">
-      <button class="btn-secondary" id="closePaypalModal" style="flex:1;">Cerrar</button>
     </div>
   </div>
 </div>
@@ -746,16 +703,6 @@
 const SUPABASE_URL = "https://btzkbfaqsaqckkjwpjlo.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_wQYgJerJ_i_cH8OQ6110ng_XDqD9YQb";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ---------- PayPal config ----------
-// Client ID real (modo Live) de developer.paypal.com — los pagos llegan a la cuenta
-// de PayPal dueña de esta app. El Client ID es público por diseño (va en la URL del
-// SDK); el "Secret" de esa misma app JAMÁS debe ponerse aquí ni en ningún archivo
-// que se sirva al navegador.
-const PAYPAL_CLIENT_ID = "BAAgKvwVa4cogOYVTfUCpGndlFfjhhefMk6EZM5IbX-rZMwbBdipVaQKW5TsSzydrTCfpMVWlXjBP_1UOA";
-// PayPal no permite pagos en COP hacia una cuenta colombiana, así que el cobro se hace
-// en USD. Actualiza este número si la tasa de cambio cambia mucho.
-const USD_EXCHANGE_RATE = 4000; // pesos colombianos por 1 USD
 
 const DEFAULT_SETTINGS = {
   storeName: "STUDIOS COLOMBIA",
@@ -916,10 +863,6 @@ function cartTotal(){
   }, 0);
 }
 
-function cartTotalUSD(){
-  return (cartTotal() / USD_EXCHANGE_RATE).toFixed(2);
-}
-
 function renderCart(){
   const count = cart.reduce((s,c)=>s+c.qty,0);
   document.getElementById("cartCount").textContent = count;
@@ -943,7 +886,6 @@ function renderCart(){
   totalEl.style.display = "flex";
   paymentBlocks.style.display = "flex";
   noticeEl.style.display = pendingCartRestored ? "block" : "none";
-  document.getElementById("usdTotalValue").textContent = "US$" + cartTotalUSD();
 
   itemsEl.innerHTML = cart.map(c => {
     const p = products.find(pr => pr.id === c.id);
@@ -1000,55 +942,6 @@ async function sendOrderWhatsapp(){
   cart = [];
   pendingCartRestored = false;
   renderCart();
-}
-
-// ---------- PayPal ----------
-let paypalSdkPromise = null;
-function loadPaypalSdk(){
-  if(!paypalSdkPromise){
-    paypalSdkPromise = new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(PAYPAL_CLIENT_ID)}&currency=USD&intent=capture`;
-      s.onload = resolve;
-      s.onerror = () => reject(new Error("No se pudo cargar el SDK de PayPal"));
-      document.head.appendChild(s);
-    });
-  }
-  return paypalSdkPromise;
-}
-
-let paypalRendered = false;
-async function ensurePaypalButtons(){
-  if(paypalRendered) return;
-  const msgEl = document.getElementById("paypalMsg");
-  try{
-    await loadPaypalSdk();
-    window.paypal.Buttons({
-      style:{ layout:"vertical", color:"gold", shape:"rect", label:"paypal" },
-      createOrder:(data, actions) => actions.order.create({
-        purchase_units:[{ amount:{ value: cartTotalUSD(), currency_code:"USD" } }]
-      }),
-      onApprove: async (data, actions) => {
-        const details = await actions.order.capture();
-        const name = details?.payer?.name?.given_name || "";
-        msgEl.className = "msg ok";
-        msgEl.textContent = `¡Pago recibido${name ? ", " + name : ""}! Guarda tu recibo, te contactaremos para enviarte tu animación.`;
-        msgEl.style.display = "block";
-        await finalizeServerOrder("paypal_paid");
-        cart = [];
-        pendingCartRestored = false;
-        renderCart();
-      },
-      onError: () => {
-        msgEl.className = "msg err";
-        msgEl.textContent = "Hubo un problema procesando el pago con PayPal. Intenta de nuevo.";
-        msgEl.style.display = "block";
-      }
-    }).render("#paypal-button-container");
-    paypalRendered = true;
-  }catch(e){
-    document.getElementById("paypal-button-container").innerHTML = '<div class="hint">No se pudo cargar PayPal. Verifica tu conexión.</div>';
-  }
 }
 
 // ---------- Customer accounts ----------
@@ -1220,15 +1113,6 @@ document.getElementById("cartItems").addEventListener("click", (e) => {
 });
 
 document.getElementById("sendWhatsapp").addEventListener("click", sendOrderWhatsapp);
-
-document.getElementById("openPaypalBtn").addEventListener("click", () => {
-  document.getElementById("usdTotalValueModal").textContent = "US$" + cartTotalUSD();
-  document.getElementById("paypalModal").style.display = "flex";
-  ensurePaypalButtons();
-});
-document.getElementById("closePaypalModal").addEventListener("click", () => {
-  document.getElementById("paypalModal").style.display = "none";
-});
 
 // ---------- Customer account UI ----------
 document.getElementById("accountBtn").addEventListener("click", async () => {
