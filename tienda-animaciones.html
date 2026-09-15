@@ -211,21 +211,37 @@
     display:block;
     transition:transform 0.4s ease;
   }
-  .video-badge{
+  .preview-media{
     position:absolute;
-    top:10px;
-    left:10px;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border:0;
+    display:block;
+    z-index:1;
+    background:#000;
+  }
+  .preview-toggle{
+    position:absolute;
+    bottom:8px;
+    right:8px;
+    z-index:2;
     background:rgba(11,13,18,0.85);
-    color:var(--blue);
+    color:var(--gold);
+    border:1px solid var(--gold);
     font-size:11px;
     font-weight:700;
-    padding:4px 8px;
-    border:1px solid var(--blue);
-    display:flex;
+    padding:6px 10px;
+    cursor:pointer;
+    display:none;
     align-items:center;
     gap:4px;
-    text-decoration:none;
   }
+  @media (hover:none){
+    .preview-toggle{display:inline-flex;}
+  }
+  .preview-toggle.active{background:var(--gold); color:#14100E;}
   .card-body{
     padding:14px 16px 16px 16px;
     display:flex;
@@ -845,9 +861,9 @@ function renderGrid(){
   grid.innerHTML = list.map(p => `
     <div class="card-wrap">
       <div class="card">
-        <div class="thumb-wrap">
+        <div class="thumb-wrap" ${p.videoUrl ? `data-has-video="1" data-video-pid="${p.id}"` : ""}>
           <img src="${p.image || ''}" alt="${p.name}">
-          ${p.videoUrl ? `<a class="video-badge" href="${p.videoUrl}" target="_blank" rel="noopener">▶ Ver video</a>` : ""}
+          ${p.videoUrl ? `<button class="preview-toggle" type="button">▶ Ver preview</button>` : ""}
         </div>
         <div class="card-body">
           <div class="card-name">${p.name}</div>
@@ -860,6 +876,102 @@ function renderGrid(){
     </div>
   `).join("");
   revealCards();
+  wireVideoPreviews();
+}
+
+// ---------- Hover/tap video preview (lazy) ----------
+function extractYouTubeId(url){
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+function extractDriveId(url){
+  const m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+function isDirectVideoUrl(url){
+  return /\.(mp4|webm|ogg|mov|mkv)(\?.*)?$/i.test(url);
+}
+
+function buildPreviewEl(url){
+  const yt = extractYouTubeId(url);
+  if(yt){
+    const iframe = document.createElement("iframe");
+    iframe.className = "preview-media";
+    iframe.src = `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&playsinline=1`;
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("title", "Vista previa del video");
+    iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+    return iframe;
+  }
+  const drive = extractDriveId(url);
+  if(drive){
+    const iframe = document.createElement("iframe");
+    iframe.className = "preview-media";
+    iframe.src = `https://drive.google.com/file/d/${drive}/preview`;
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("title", "Vista previa del video");
+    iframe.allow = "autoplay";
+    return iframe;
+  }
+  if(isDirectVideoUrl(url)){
+    const video = document.createElement("video");
+    video.className = "preview-media";
+    video.src = url;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = "none";
+    return video;
+  }
+  return null;
+}
+
+function wireVideoPreviews(){
+  document.querySelectorAll("#grid .thumb-wrap[data-has-video]").forEach(wrap => {
+    const product = products.find(p => p.id === wrap.dataset.videoPid);
+    const url = product ? product.videoUrl : null;
+    if(!url) return;
+
+    let mediaEl = null;
+
+    function showPreview(){
+      if(mediaEl) return;
+      mediaEl = buildPreviewEl(url);
+      if(!mediaEl) return;
+      wrap.appendChild(mediaEl);
+      if(mediaEl.tagName === "VIDEO"){
+        mediaEl.play().catch(() => {});
+      }
+    }
+    function hidePreview(){
+      if(!mediaEl) return;
+      if(mediaEl.tagName === "VIDEO"){
+        mediaEl.pause();
+        mediaEl.currentTime = 0;
+      }
+      mediaEl.remove();
+      mediaEl = null;
+    }
+
+    wrap.addEventListener("mouseenter", showPreview);
+    wrap.addEventListener("mouseleave", hidePreview);
+
+    const toggleBtn = wrap.querySelector(".preview-toggle");
+    if(toggleBtn){
+      toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(mediaEl){
+          hidePreview();
+          toggleBtn.classList.remove("active");
+          toggleBtn.textContent = "▶ Ver preview";
+        }else{
+          showPreview();
+          toggleBtn.classList.add("active");
+          toggleBtn.textContent = "❚❚ Pausar";
+        }
+      });
+    }
+  });
 }
 
 function revealCards(){
