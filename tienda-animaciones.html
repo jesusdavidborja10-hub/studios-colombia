@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STUDIOS COLOMBIA</title>
+<link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -49,9 +50,25 @@
     color:var(--text);
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:12px;
   }
   .logo span{color:var(--gold);}
+  .logo-mark{
+    height:72px;
+    width:72px;
+    border-radius:50%;
+    object-fit:contain;
+    flex-shrink:0;
+    box-shadow:0 0 0 2px rgba(244,185,66,0.35), 0 0 18px 2px rgba(244,185,66,0.45);
+    animation:logoGlow 4s ease-in-out infinite;
+  }
+  @keyframes logoGlow{
+    0%,100%{box-shadow:0 0 0 2px rgba(244,185,66,0.35), 0 0 18px 2px rgba(244,185,66,0.45);}
+    50%{box-shadow:0 0 0 2px rgba(244,185,66,0.55), 0 0 28px 8px rgba(244,185,66,0.75);}
+  }
+  @media (max-width:640px){
+    .logo-mark{height:44px;width:44px;}
+  }
   #storeNameDisplay{cursor:default;}
   header::after{
     content:"";
@@ -559,7 +576,7 @@
 <body>
 
 <header>
-  <div class="logo"><span>▸</span><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
+  <div class="logo"><img src="logo-studios-colombia-header.png" alt="Studios Colombia" class="logo-mark"><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
   <div style="display:flex;align-items:center;gap:14px;">
     <div style="font-size:13px;color:var(--muted)" class="tagline-desktop">Catálogo de animaciones</div>
     <button id="accountBtn" class="btn-account">Iniciar sesión</button>
