@@ -23,7 +23,11 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg);
+    background:
+      radial-gradient(circle at 15% -10%, rgba(244,185,66,0.06), transparent 40%),
+      radial-gradient(circle at 100% 15%, rgba(47,95,222,0.05), transparent 45%),
+      var(--bg);
+    background-attachment:fixed;
     color:var(--text);
     font-family:'Inter',sans-serif;
     min-height:100vh;
@@ -76,6 +80,12 @@
     left:0; right:0; bottom:-3px;
     height:3px;
     background:linear-gradient(90deg, var(--gold) 0 50%, var(--blue) 50% 75%, var(--red) 75% 100%);
+    background-size:200% 100%;
+    animation:tricolorSlide 12s ease-in-out infinite alternate;
+  }
+  @keyframes tricolorSlide{
+    from{background-position:0% 0;}
+    to{background-position:100% 0;}
   }
   .btn-account{
     background:var(--panel2);
@@ -89,8 +99,13 @@
     max-width:160px;
     overflow:hidden;
     text-overflow:ellipsis;
+    transition:border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   }
-  .btn-account:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-account:hover{
+    border-color:var(--gold);
+    color:var(--gold);
+    box-shadow:0 0 14px rgba(244,185,66,0.35);
+  }
   @media (max-width:520px){
     .tagline-desktop{display:none;}
   }
@@ -139,7 +154,7 @@
     clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
     transition:border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
   }
-  .cat-tab:hover{border-color:var(--blue); color:var(--blue);}
+  .cat-tab:hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 12px rgba(47,95,222,0.35);}
   .cat-tab.active{background:var(--gold); color:#14100E; border-color:var(--gold);}
 
   /* ---------- GRID ---------- */
@@ -149,6 +164,26 @@
     gap:20px;
   }
 
+  .card-wrap{
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+    opacity:0;
+    transform:translateY(22px);
+    transition:opacity 0.6s ease, transform 0.5s ease, filter 0.3s ease;
+  }
+  .card-wrap.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  @media (hover:hover){
+    .card-wrap.in-view:hover{
+      transform:scale(1.03);
+      filter:drop-shadow(0 0 3px rgba(244,185,66,0.7)) drop-shadow(0 0 18px rgba(244,185,66,0.55)) drop-shadow(0 14px 24px rgba(0,0,0,0.45));
+      z-index:2;
+    }
+    .card-wrap.in-view:hover .thumb-wrap img{
+      transform:scale(1.08);
+    }
+  }
   .card{
     background:var(--panel);
     border:1px solid var(--border);
@@ -158,6 +193,7 @@
     flex-direction:column;
     overflow:hidden;
     position:relative;
+    height:100%;
   }
   .card .thumb-wrap{
     position:relative;
@@ -171,6 +207,7 @@
     height:100%;
     object-fit:cover;
     display:block;
+    transition:transform 0.4s ease;
   }
   .video-badge{
     position:absolute;
@@ -223,10 +260,23 @@
     clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
     transition:box-shadow 0.15s ease, transform 0.1s ease;
     white-space:nowrap;
+    position:relative;
+    overflow:hidden;
+  }
+  .btn-add::after{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+    transform:skewX(-20deg);
+    transition:left 0.6s ease;
+    pointer-events:none;
   }
   .btn-add:hover{
     box-shadow:0 0 0 1px var(--red), 0 0 18px rgba(232,67,61,0.55);
   }
+  .btn-add:hover::after{left:130%;}
   .btn-add:active{transform:scale(0.97);}
   .btn-del-item{
     background:none;
@@ -265,6 +315,30 @@
     box-shadow:0 4px 24px rgba(244,185,66,0.35);
     z-index:30;
     border:none;
+    overflow:hidden;
+    transition:box-shadow 0.25s ease;
+  }
+  #cartFab::after{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+    transform:skewX(-20deg);
+    transition:left 0.6s ease;
+    pointer-events:none;
+  }
+  #cartFab:hover{
+    box-shadow:0 4px 30px rgba(244,185,66,0.6);
+  }
+  #cartFab:hover::after{left:130%;}
+  #cartFab.bump{animation:cartBump 0.6s ease;}
+  @keyframes cartBump{
+    0%{transform:scale(1);}
+    30%{transform:scale(1.18);}
+    55%{transform:scale(0.94);}
+    75%{transform:scale(1.06);}
+    100%{transform:scale(1);}
   }
   #cartFab .count{
     background:#0B0D12;
@@ -909,21 +983,42 @@ function renderGrid(){
     return;
   }
   grid.innerHTML = list.map(p => `
-    <div class="card">
-      <div class="thumb-wrap">
-        <img src="${p.image || ''}" alt="${p.name}">
-        ${p.videoUrl ? `<a class="video-badge" href="${p.videoUrl}" target="_blank" rel="noopener">▶ Ver video</a>` : ""}
-      </div>
-      <div class="card-body">
-        <div class="card-name">${p.name}</div>
-        <div class="card-bottom">
-          <div class="price">${formatPrice(p.price)}</div>
-          <button class="btn-add" data-id="${p.id}">Agregar</button>
+    <div class="card-wrap">
+      <div class="card">
+        <div class="thumb-wrap">
+          <img src="${p.image || ''}" alt="${p.name}">
+          ${p.videoUrl ? `<a class="video-badge" href="${p.videoUrl}" target="_blank" rel="noopener">▶ Ver video</a>` : ""}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${p.name}</div>
+          <div class="card-bottom">
+            <div class="price">${formatPrice(p.price)}</div>
+            <button class="btn-add" data-id="${p.id}">Agregar</button>
+          </div>
         </div>
       </div>
     </div>
   `).join("");
+  revealCards();
 }
+
+function revealCards(){
+  const cards = document.querySelectorAll(".card-wrap:not(.in-view)");
+  if(!("IntersectionObserver" in window)){
+    cards.forEach(el => el.classList.add("in-view"));
+    return;
+  }
+  cards.forEach(el => cardRevealObserver.observe(el));
+}
+
+const cardRevealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add("in-view");
+      cardRevealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
 
 function addToCart(id){
   const existing = cart.find(c => c.id === id);
@@ -931,6 +1026,14 @@ function addToCart(id){
   else{ cart.push({id, qty:1}); }
   renderCart();
   syncCartToServer();
+  bumpCartFab();
+}
+
+function bumpCartFab(){
+  const fab = document.getElementById("cartFab");
+  fab.classList.remove("bump");
+  void fab.offsetWidth;
+  fab.classList.add("bump");
 }
 
 function changeQty(id, delta){
