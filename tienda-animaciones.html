@@ -897,6 +897,7 @@ function buildPreviewEl(url){
     iframe.setAttribute("frameborder", "0");
     iframe.setAttribute("title", "Vista previa del video");
     iframe.allow = "autoplay; encrypted-media; picture-in-picture";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
     return iframe;
   }
   const drive = extractDriveId(url);
