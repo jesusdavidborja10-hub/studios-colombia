@@ -877,7 +877,7 @@ function renderGrid(){
 
 // ---------- Hover/tap video preview (lazy) ----------
 function extractYouTubeId(url){
-  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{6,})/);
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{6,})/);
   return m ? m[1] : null;
 }
 function extractDriveId(url){
@@ -962,8 +962,10 @@ function wireVideoPreviews(containerSelector, list){
           toggleBtn.textContent = "▶ Ver preview";
         }else{
           showPreview();
-          toggleBtn.classList.add("active");
-          toggleBtn.textContent = "❚❚ Pausar";
+          if(mediaEl){
+            toggleBtn.classList.add("active");
+            toggleBtn.textContent = "❚❚ Pausar";
+          }
         }
       });
     }
