@@ -502,31 +502,6 @@
   .hint{font-size:11px;color:var(--muted);margin-top:4px;}
 
   /* ---------- CUSTOMER ACCOUNT ---------- */
-  .btn-google{
-    width:100%;
-    background:#fff;
-    color:#1f1f1f;
-    border:1px solid var(--border);
-    padding:12px;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    margin-top:16px;
-  }
-  .auth-divider{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:18px 0;
-    color:var(--muted);
-    font-size:11px;
-  }
-  .auth-divider::before, .auth-divider::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background:var(--border);
-  }
   .auth-toggle{
     text-align:center;
     margin-top:12px;
@@ -683,8 +658,6 @@
         <span id="accountAuthToggleText">¿No tienes cuenta?</span>
         <button id="accountAuthToggleBtn">Regístrate</button>
       </div>
-      <div class="auth-divider">o</div>
-      <button id="googleLoginBtn" class="btn-google">Continuar con Google</button>
     </div>
 
     <!-- Logged in: profile + order history -->
@@ -1433,10 +1406,6 @@ document.getElementById("custAuthSubmit").addEventListener("click", async () => 
     return;
   }
   document.getElementById("accountModal").style.display = "none";
-});
-
-document.getElementById("googleLoginBtn").addEventListener("click", async () => {
-  await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
 });
 
 document.getElementById("saveProfileBtn").addEventListener("click", async () => {
