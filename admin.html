@@ -49,24 +49,25 @@
   .brand .gold{color:var(--gold);}
 
   main{
-    max-width:760px;
+    max-width:900px;
     margin:0 auto;
     padding:28px 20px 60px;
   }
 
   h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:0.3px;margin:0;}
-  h2{font-size:19px;margin-bottom:18px;}
-  h3{font-size:15px;margin:24px 0 14px;color:var(--gold);}
+  h2{font-size:19px;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+  h3{font-size:15px;margin:24px 0 14px;color:var(--gold);display:flex;align-items:center;gap:6px;}
 
   .panel-section{
     background:var(--panel);
     border:1px solid var(--border);
     border-top:3px solid var(--gold);
-    padding:22px;
-    margin-bottom:22px;
+    padding:26px;
+    margin-bottom:26px;
+    border-radius:2px;
   }
 
-  .field{margin-bottom:14px;}
+  .field{margin-bottom:16px;}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
   .field input[type=text], .field input[type=number], .field input[type=password], .field select{
     width:100%;
@@ -108,14 +109,85 @@
   .row{display:flex;gap:8px;}
   .row .field{flex:1;margin-bottom:0;}
 
-  .admin-list-row{
-    display:flex;align-items:center;gap:10px;
-    padding:8px 0;border-bottom:1px solid var(--border);
-    font-size:13px;
+  /* ---- Tabs ---- */
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--border);
   }
-  .admin-list-row img{width:36px;height:36px;object-fit:cover;flex-shrink:0;}
-  .admin-list-row .n{flex:1;}
-  .admin-list-row select{
+  .tab-btn{
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    color:var(--muted);
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:12px 16px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{
+    color:var(--gold);
+    border-bottom-color:var(--gold);
+  }
+
+  /* ---- Collapsible ---- */
+  .collapsible-toggle{
+    width:100%;
+    text-align:left;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--gold);
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:14px 16px;
+    cursor:pointer;
+  }
+  .collapsible-toggle::after{content:"▾";float:right;color:var(--muted);}
+  .collapsible-toggle.open::after{content:"▴";}
+  .collapsible-body{margin-top:18px;}
+
+  /* ---- Categories as chips ---- */
+  .chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:12px;
+    padding:6px 6px 6px 12px;
+    border-radius:100px;
+  }
+  .chip button{
+    background:none;border:none;color:var(--muted);
+    cursor:pointer;font-size:14px;line-height:1;
+    width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .chip button:hover{color:var(--red);background:rgba(232,67,61,0.12);}
+
+  /* ---- Products table ---- */
+  .table-scroll{max-height:520px;overflow-y:auto;border:1px solid var(--border);}
+  table.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.admin-table thead th{
+    position:sticky;top:0;
+    background:var(--panel2);
+    color:var(--muted);
+    font-size:11px;text-transform:uppercase;letter-spacing:0.4px;
+    text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);
+  }
+  table.admin-table tbody td{
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  table.admin-table tbody tr:last-child td{border-bottom:none;}
+  table.admin-table img{width:40px;height:40px;object-fit:cover;flex-shrink:0;display:block;}
+  table.admin-table select{
     background:var(--panel2);
     border:1px solid var(--border);
     color:var(--text);
@@ -124,19 +196,54 @@
     max-width:140px;
     font-family:'Inter',sans-serif;
   }
+  .actions-cell{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+  table.admin-table button, table.admin-table .video-upload-btn{
+    background:none;border:1px solid var(--border);color:var(--red);
+    cursor:pointer;font-size:11px;padding:5px 8px;
+  }
+  .video-upload-btn{color:var(--blue);display:inline-flex;align-items:center;flex-shrink:0;}
+  .video-upload-btn:hover{border-color:var(--blue);}
+
+  /* ---- Categories manage list (fallback plain rows, kept for reference) ---- */
+  .admin-list-row{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 0;border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+  .admin-list-row .n{flex:1;}
   .admin-list-row button{
     background:none;border:1px solid var(--border);color:var(--red);
     cursor:pointer;font-size:11px;padding:4px 8px;
   }
-  .video-upload-btn{
-    background:none;border:1px solid var(--border);color:var(--blue);
-    cursor:pointer;font-size:11px;padding:4px 8px;
-    display:inline-flex;align-items:center;flex-shrink:0;
+
+  /* ---- Custom options cards ---- */
+  .cards-list{display:flex;flex-direction:column;gap:12px;margin-top:4px;}
+  .custom-option-card{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    padding:14px 16px;
   }
-  .video-upload-btn:hover{border-color:var(--blue);}
-  .admin-list-row button.edit-btn{color:var(--blue);}
+  .co-card-header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .co-title{font-weight:700;font-size:14px;}
+  .co-price{color:var(--gold);font-weight:700;font-size:13px;}
+  .co-desc{color:var(--muted);font-size:12px;margin-top:6px;}
+  .co-actions{display:flex;gap:8px;margin-top:12px;}
+  .co-actions button{
+    background:none;border:1px solid var(--border);color:var(--red);
+    cursor:pointer;font-size:11px;padding:5px 10px;
+  }
+  .co-actions button.edit-btn{color:var(--blue);}
 
   #loginSection{max-width:380px;margin:64px auto 0;}
+
+  @media (max-width:640px){
+    main{padding:20px 14px 60px;}
+    .panel-section{padding:18px;}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .tab-btn{padding:10px 12px;font-size:12px;}
+    table.admin-table{font-size:12px;}
+    table.admin-table thead th, table.admin-table tbody td{padding:8px;}
+  }
 </style>
 </head>
 <body>
@@ -167,93 +274,128 @@
 
   <div id="panelSection" style="display:none;">
 
-    <div class="panel-section">
-      <h2>Categorías</h2>
-      <div class="row">
-        <div class="field"><input type="text" id="catName" placeholder="Ej: Alertas de regalo"></div>
-        <button class="btn-primary" id="catAddBtn" style="flex:0 0 auto;padding:10px 16px;">Agregar</button>
-      </div>
-      <div id="catMsg" class="msg" style="display:none;"></div>
-      <div id="catManageList" style="margin-top:12px;"></div>
+    <div class="tabs">
+      <button class="tab-btn active" type="button" data-tab="catalogo">🎬 Catálogo</button>
+      <button class="tab-btn" type="button" data-tab="personalizados">✨ Personalizados y Precios</button>
+      <button class="tab-btn" type="button" data-tab="ajustes">⚙️ Ajustes de la tienda</button>
     </div>
 
-    <div class="panel-section">
-      <h2>Agregar animación</h2>
-      <div class="field">
-        <label>Nombre del producto</label>
-        <input type="text" id="pName" placeholder="Ej: Alerta corazón dorado">
+    <div class="tab-content" data-tabcontent="catalogo">
+
+      <div class="panel-section">
+        <h2>🏷️ Categorías</h2>
+        <div class="row">
+          <div class="field"><input type="text" id="catName" placeholder="Ej: Alertas de regalo"></div>
+          <button class="btn-primary" id="catAddBtn" style="flex:0 0 auto;padding:10px 16px;">Agregar</button>
+        </div>
+        <div id="catMsg" class="msg" style="display:none;"></div>
+        <div id="catManageList" class="chip-list"></div>
       </div>
-      <div class="field">
-        <label>Precio (número, ej: 15000)</label>
-        <input type="number" id="pPrice" placeholder="15000">
+
+      <div class="panel-section">
+        <button class="collapsible-toggle" type="button" id="addProductToggle">+ Agregar nueva animación</button>
+        <div class="collapsible-body" id="addProductBody" hidden>
+          <div class="field">
+            <label>Nombre del producto</label>
+            <input type="text" id="pName" placeholder="Ej: Alerta corazón dorado">
+          </div>
+          <div class="field">
+            <label>Precio (número, ej: 15000)</label>
+            <input type="number" id="pPrice" placeholder="15000">
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <select id="pCategory"></select>
+          </div>
+          <div class="field">
+            <label>Imagen (foto o miniatura)</label>
+            <input type="file" id="pImage" accept="image/*">
+            <div class="hint">Se comprime automáticamente para que quepa en el catálogo.</div>
+          </div>
+          <div class="field">
+            <label>Video del producto (opcional)</label>
+            <input type="file" id="pVideoFile" accept="video/*">
+            <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos).</div>
+          </div>
+          <div id="addMsg" class="msg" style="display:none;"></div>
+          <button class="btn-primary" id="pAddBtn" style="width:100%;">Agregar al catálogo</button>
+        </div>
       </div>
-      <div class="field">
-        <label>Categoría</label>
-        <select id="pCategory"></select>
+
+      <div class="panel-section">
+        <h2>🎬 Productos existentes</h2>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Categoría</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="adminList"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="field">
-        <label>Imagen (foto o miniatura)</label>
-        <input type="file" id="pImage" accept="image/*">
-        <div class="hint">Se comprime automáticamente para que quepa en el catálogo.</div>
-      </div>
-      <div class="field">
-        <label>Video del producto (opcional)</label>
-        <input type="file" id="pVideoFile" accept="video/*">
-        <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos).</div>
-      </div>
-      <div id="addMsg" class="msg" style="display:none;"></div>
-      <button class="btn-primary" id="pAddBtn" style="width:100%;">Agregar al catálogo</button>
+
     </div>
 
-    <div class="panel-section">
-      <h2>Productos existentes</h2>
-      <div id="adminList"></div>
+    <div class="tab-content" data-tabcontent="personalizados" hidden>
+
+      <div class="panel-section">
+        <button class="collapsible-toggle" type="button" id="addCustomOptionToggle">+ Agregar / editar opción</button>
+        <div class="collapsible-body" id="addCustomOptionBody" hidden>
+          <div class="field">
+            <label>Título</label>
+            <input type="text" id="coTitle" placeholder="Ej: Personalizado básico">
+          </div>
+          <div class="field">
+            <label>Descripción</label>
+            <input type="text" id="coDescription" placeholder="Qué incluye esta opción">
+          </div>
+          <div class="field">
+            <label>Precio (número, ej: 25000)</label>
+            <input type="number" id="coPrice" placeholder="25000">
+          </div>
+          <div class="field">
+            <label>Link del video de ejemplo (opcional)</label>
+            <input type="text" id="coVideoUrl" placeholder="https://drive.google.com/... o https://youtube.com/...">
+            <div class="hint">Pega el link para compartir (Google Drive, YouTube, etc.). Se muestra embebido cuando es posible.</div>
+          </div>
+          <div id="coMsg" class="msg" style="display:none;"></div>
+          <button class="btn-primary" id="coAddBtn" style="width:100%;">Agregar opción</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>✨ Opciones existentes</h2>
+        <div id="customOptionsList" class="cards-list"></div>
+      </div>
+
     </div>
 
-    <div class="panel-section">
-      <h2>Personalizados y Precios</h2>
+    <div class="tab-content" data-tabcontent="ajustes" hidden>
 
-      <h3 style="margin-top:0;">Opciones existentes</h3>
-      <div id="customOptionsList"></div>
+      <div class="panel-section">
+        <h2>⚙️ Ajustes de la tienda</h2>
+        <div class="field">
+          <label>Nombre de la tienda</label>
+          <input type="text" id="sName">
+        </div>
+        <div class="field">
+          <label>Texto del banner de promoción</label>
+          <input type="text" id="sPromo">
+        </div>
+        <div class="field">
+          <label>Número de WhatsApp (con código de país, sin +)</label>
+          <input type="text" id="sWhats">
+        </div>
+        <button class="btn-primary" id="saveSettingsBtn" style="width:100%;">Guardar ajustes</button>
+        <div id="settingsMsg" class="msg" style="display:none;"></div>
+      </div>
 
-      <h3>Agregar / editar opción</h3>
-      <div class="field">
-        <label>Título</label>
-        <input type="text" id="coTitle" placeholder="Ej: Personalizado básico">
-      </div>
-      <div class="field">
-        <label>Descripción</label>
-        <input type="text" id="coDescription" placeholder="Qué incluye esta opción">
-      </div>
-      <div class="field">
-        <label>Precio (número, ej: 25000)</label>
-        <input type="number" id="coPrice" placeholder="25000">
-      </div>
-      <div class="field">
-        <label>Link del video de ejemplo (opcional)</label>
-        <input type="text" id="coVideoUrl" placeholder="https://drive.google.com/... o https://youtube.com/...">
-        <div class="hint">Pega el link para compartir (Google Drive, YouTube, etc.). Se muestra embebido cuando es posible.</div>
-      </div>
-      <div id="coMsg" class="msg" style="display:none;"></div>
-      <button class="btn-primary" id="coAddBtn" style="width:100%;">Agregar opción</button>
-    </div>
-
-    <div class="panel-section">
-      <h2>Ajustes de la tienda</h2>
-      <div class="field">
-        <label>Nombre de la tienda</label>
-        <input type="text" id="sName">
-      </div>
-      <div class="field">
-        <label>Texto del banner de promoción</label>
-        <input type="text" id="sPromo">
-      </div>
-      <div class="field">
-        <label>Número de WhatsApp (con código de país, sin +)</label>
-        <input type="text" id="sWhats">
-      </div>
-      <button class="btn-primary" id="saveSettingsBtn" style="width:100%;">Guardar ajustes</button>
-      <div id="settingsMsg" class="msg" style="display:none;"></div>
     </div>
 
   </div>
@@ -292,6 +434,35 @@ function formatPrice(n){
 
 function truncate(str, n){
   return str.length > n ? str.slice(0, n - 1) + "…" : str;
+}
+
+// ---------- Tabs ----------
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".tab-content").forEach(tc => {
+      tc.hidden = tc.dataset.tabcontent !== tab;
+    });
+  });
+});
+
+// ---------- Collapsibles ----------
+function setupCollapsible(toggleId, bodyId){
+  const toggle = document.getElementById(toggleId);
+  const body = document.getElementById(bodyId);
+  toggle.addEventListener("click", () => {
+    body.hidden = !body.hidden;
+    toggle.classList.toggle("open", !body.hidden);
+  });
+}
+setupCollapsible("addProductToggle", "addProductBody");
+setupCollapsible("addCustomOptionToggle", "addCustomOptionBody");
+
+function openCustomOptionForm(){
+  document.getElementById("addCustomOptionBody").hidden = false;
+  document.getElementById("addCustomOptionToggle").classList.add("open");
 }
 
 // ---------- Admin check ----------
@@ -343,20 +514,23 @@ function categoryOptionsHtml(selectedId){
 function renderAdminList(){
   const el = document.getElementById("adminList");
   if(products.length === 0){
-    el.innerHTML = '<div class="hint">No hay productos todavía.</div>';
+    el.innerHTML = '<tr><td colspan="5" class="hint">No hay productos todavía.</td></tr>';
     return;
   }
   el.innerHTML = products.map(p => `
-    <div class="admin-list-row">
-      <img src="${p.image || ''}" alt="">
-      <div class="n">${p.name} — ${formatPrice(p.price)}${p.videoUrl ? " 🎬" : ""}</div>
-      <select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select>
-      <label class="video-upload-btn" title="Subir / reemplazar video">
-        🎬
-        <input type="file" accept="video/*" data-videoprod="${p.id}" style="display:none;">
-      </label>
-      <button data-del="${p.id}">Eliminar</button>
-    </div>
+    <tr>
+      <td><img src="${p.image || ''}" alt=""></td>
+      <td>${p.name}${p.videoUrl ? " 🎬" : ""}</td>
+      <td>${formatPrice(p.price)}</td>
+      <td><select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select></td>
+      <td class="actions-cell">
+        <label class="video-upload-btn" title="Subir / reemplazar video">
+          🎬
+          <input type="file" accept="video/*" data-videoprod="${p.id}" style="display:none;">
+        </label>
+        <button data-del="${p.id}">Eliminar</button>
+      </td>
+    </tr>
   `).join("");
 }
 
@@ -367,10 +541,7 @@ function renderCatManageList(){
     return;
   }
   el.innerHTML = categories.map(c => `
-    <div class="admin-list-row">
-      <div class="n">${c.name}</div>
-      <button data-delcat="${c.id}">Eliminar</button>
-    </div>
+    <span class="chip">${c.name}<button data-delcat="${c.id}" aria-label="Eliminar categoría" title="Eliminar categoría">×</button></span>
   `).join("");
 }
 
@@ -390,13 +561,16 @@ function renderCustomOptionsList(){
     return;
   }
   el.innerHTML = customOptions.map(o => `
-    <div class="admin-list-row" style="align-items:flex-start;">
-      <div class="n">
-        <div style="font-weight:600;">${o.title} — ${formatPrice(o.price)}</div>
-        <div style="color:var(--muted);font-size:11px;margin-top:2px;">${truncate(o.description || "Sin descripción", 90)} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
+    <div class="custom-option-card">
+      <div class="co-card-header">
+        <span class="co-title">${o.title}</span>
+        <span class="co-price">${formatPrice(o.price)}</span>
       </div>
-      <button class="edit-btn" data-editco="${o.id}">Editar</button>
-      <button data-delco="${o.id}">Eliminar</button>
+      <div class="co-desc">${truncate(o.description || "Sin descripción", 90)} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
+      <div class="co-actions">
+        <button class="edit-btn" data-editco="${o.id}">Editar</button>
+        <button data-delco="${o.id}">Eliminar</button>
+      </div>
     </div>
   `).join("");
 }
@@ -717,6 +891,7 @@ document.getElementById("customOptionsList").addEventListener("click", async (e)
     document.getElementById("coVideoUrl").value = opt.video_url || "";
     document.getElementById("coAddBtn").textContent = "Guardar cambios";
     document.getElementById("coMsg").style.display = "none";
+    openCustomOptionForm();
     document.getElementById("coTitle").scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
