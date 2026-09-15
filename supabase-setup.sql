@@ -242,9 +242,15 @@ create table if not exists custom_options (
   description text,
   price numeric not null,
   video_url text,
+  image_url text,
   display_order integer not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- Por si la tabla ya existía de antes de que "image_url" se agregara: mismo
+-- patrón de almacenamiento que products.image (imagen comprimida como data
+-- URL base64, no un archivo subido a Storage).
+alter table custom_options add column if not exists image_url text;
 
 alter table custom_options enable row level security;
 

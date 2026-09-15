@@ -211,6 +211,15 @@
     display:block;
     transition:transform 0.4s ease;
   }
+  .thumb-placeholder{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    color:var(--muted);
+  }
   .preview-media{
     position:absolute;
     inset:0;
@@ -316,19 +325,6 @@
   .empty-state b{color:var(--text);}
 
   /* ---------- CUSTOM OPTIONS ---------- */
-  .custom-media{
-    position:relative;
-    width:100%;
-    aspect-ratio:16/9;
-    background:var(--panel2);
-    overflow:hidden;
-  }
-  .custom-media iframe, .custom-media video{
-    width:100%;
-    height:100%;
-    border:0;
-    display:block;
-  }
   .custom-desc{
     font-size:13px;
     color:var(--muted);
@@ -340,20 +336,6 @@
     flex-direction:column;
     gap:8px;
   }
-  .custom-video-link{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    color:var(--blue);
-    font-size:12px;
-    font-weight:700;
-    text-decoration:none;
-    border:1px solid var(--blue);
-    padding:9px 10px;
-    transition:background 0.15s ease;
-  }
-  .custom-video-link:hover{background:rgba(47,95,222,0.12);}
 
   /* ---------- CART FAB ---------- */
   #cartFab{
@@ -890,7 +872,7 @@ function renderGrid(){
     </div>
   `).join("");
   revealCards();
-  wireVideoPreviews();
+  wireVideoPreviews("#grid", products);
 }
 
 // ---------- Hover/tap video preview (lazy) ----------
@@ -940,10 +922,10 @@ function buildPreviewEl(url){
   return null;
 }
 
-function wireVideoPreviews(){
-  document.querySelectorAll("#grid .thumb-wrap[data-has-video]").forEach(wrap => {
-    const product = products.find(p => p.id === wrap.dataset.videoPid);
-    const url = product ? product.videoUrl : null;
+function wireVideoPreviews(containerSelector, list){
+  document.querySelectorAll(`${containerSelector} .thumb-wrap[data-has-video]`).forEach(wrap => {
+    const item = list.find(p => p.id === wrap.dataset.videoPid);
+    const url = item ? item.videoUrl : null;
     if(!url) return;
 
     let mediaEl = null;
@@ -1017,19 +999,10 @@ async function loadCustomOptions(){
     title: o.title,
     description: o.description,
     price: o.price,
-    videoUrl: o.video_url
+    videoUrl: o.video_url,
+    imageUrl: o.image_url
   }));
   renderCustomGrid();
-}
-
-function customMediaHtml(url){
-  if(!url) return "";
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{6,})/);
-  if(yt) return `<div class="custom-media"><iframe src="https://www.youtube.com/embed/${yt[1]}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
-  const drive = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if(drive) return `<div class="custom-media"><iframe src="https://drive.google.com/file/d/${drive[1]}/preview" loading="lazy" allow="autoplay" allowfullscreen></iframe></div>`;
-  if(/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) return `<div class="custom-media"><video src="${url}" controls preload="metadata"></video></div>`;
-  return "";
 }
 
 function renderCustomGrid(){
@@ -1038,27 +1011,26 @@ function renderCustomGrid(){
     grid.innerHTML = '<div class="empty-state">Muy pronto vas a poder ver aquí las opciones personalizadas.</div>';
     return;
   }
-  grid.innerHTML = customOptions.map(opt => {
-    const mediaHtml = customMediaHtml(opt.videoUrl);
-    const linkHtml = mediaHtml ? "" : (opt.videoUrl ? `<a class="custom-video-link" href="${opt.videoUrl}" target="_blank" rel="noopener">▶ Ver video de ejemplo</a>` : "");
-    return `
-      <div class="card-wrap">
-        <div class="card">
-          ${mediaHtml}
-          <div class="card-body">
-            <div class="card-name">${opt.title}</div>
-            ${opt.description ? `<div class="custom-desc">${opt.description}</div>` : ""}
-            <div class="price">${formatPrice(opt.price)}</div>
-            <div class="custom-card-actions">
-              ${linkHtml}
-              <button class="btn-add" data-custom-order="${opt.id}">Pedir por WhatsApp</button>
-            </div>
+  grid.innerHTML = customOptions.map(opt => `
+    <div class="card-wrap">
+      <div class="card">
+        <div class="thumb-wrap" ${opt.videoUrl ? `data-has-video="1" data-video-pid="${opt.id}"` : ""}>
+          ${opt.imageUrl ? `<img src="${opt.imageUrl}" alt="${opt.title}">` : `<div class="thumb-placeholder">🖼️</div>`}
+          ${opt.videoUrl ? `<button class="preview-toggle" type="button">▶ Ver preview</button>` : ""}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${opt.title}</div>
+          ${opt.description ? `<div class="custom-desc">${opt.description}</div>` : ""}
+          <div class="price">${formatPrice(opt.price)}</div>
+          <div class="custom-card-actions">
+            <button class="btn-add" data-custom-order="${opt.id}">Pedir por WhatsApp</button>
           </div>
         </div>
       </div>
-    `;
-  }).join("");
+    </div>
+  `).join("");
   revealCards();
+  wireVideoPreviews("#customGrid", customOptions);
 }
 
 function orderCustomOption(id){

@@ -223,7 +223,7 @@
     border:1px solid var(--border);
     padding:14px 16px;
   }
-  .co-card-header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .co-card-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
   .co-title{font-weight:700;font-size:14px;}
   .co-price{color:var(--gold);font-weight:700;font-size:13px;}
   .co-desc{color:var(--muted);font-size:12px;margin-top:6px;}
@@ -358,6 +358,11 @@
           <div class="field">
             <label>Precio (número, ej: 25000)</label>
             <input type="number" id="coPrice" placeholder="25000">
+          </div>
+          <div class="field">
+            <label>Imagen de portada (opcional)</label>
+            <input type="file" id="coImage" accept="image/*">
+            <div class="hint">Se comprime automáticamente. Si estás editando y no subes una nueva, se mantiene la imagen actual.</div>
           </div>
           <div class="field">
             <label>Link del video de ejemplo (opcional)</label>
@@ -563,7 +568,12 @@ function renderCustomOptionsList(){
   el.innerHTML = customOptions.map(o => `
     <div class="custom-option-card">
       <div class="co-card-header">
-        <span class="co-title">${o.title}</span>
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+          ${o.image_url
+            ? `<img src="${o.image_url}" alt="" style="width:40px;height:40px;object-fit:cover;flex-shrink:0;">`
+            : `<div style="width:40px;height:40px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);">🖼️</div>`}
+          <span class="co-title">${o.title}</span>
+        </div>
         <span class="co-price">${formatPrice(o.price)}</span>
       </div>
       <div class="co-desc">${truncate(o.description || "Sin descripción", 90)} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
@@ -580,6 +590,7 @@ function resetCustomOptionForm(){
   document.getElementById("coTitle").value = "";
   document.getElementById("coDescription").value = "";
   document.getElementById("coPrice").value = "";
+  document.getElementById("coImage").value = "";
   document.getElementById("coVideoUrl").value = "";
   document.getElementById("coAddBtn").textContent = "Agregar opción";
 }
@@ -830,6 +841,7 @@ document.getElementById("coAddBtn").addEventListener("click", async () => {
   const description = document.getElementById("coDescription").value.trim();
   const price = document.getElementById("coPrice").value;
   const videoUrl = document.getElementById("coVideoUrl").value.trim();
+  const imageFile = document.getElementById("coImage").files[0];
 
   if(!title || !price){
     msgEl.className = "msg err";
@@ -844,6 +856,20 @@ document.getElementById("coAddBtn").addEventListener("click", async () => {
     price: Number(price),
     video_url: videoUrl || null
   };
+
+  if(imageFile){
+    msgEl.className = "msg";
+    msgEl.textContent = "Procesando imagen...";
+    msgEl.style.display = "block";
+    try{
+      payload.image_url = await compressImage(imageFile);
+    }catch(err){
+      msgEl.className = "msg err";
+      msgEl.textContent = "No se pudo procesar la imagen. Intenta con otra.";
+      msgEl.style.display = "block";
+      return;
+    }
+  }
 
   if(editingCustomOptionId){
     const { error } = await sb.from("custom_options").update(payload).eq("id", editingCustomOptionId);
