@@ -1328,9 +1328,19 @@ function updateAccountUI(){
 
 async function handleAuthChange(session){
   if(session && session.user){
+    // onAuthStateChange dispara este callback en cada evento con sesión válida
+    // (carga inicial, refresco de token, cambio de foco de pestaña, etc.), no
+    // solo cuando el cliente inicia sesión de verdad. Si volviéramos a correr
+    // restoreServerCart() en cada uno de esos eventos, el carrito que ya está
+    // en memoria se volvería a fusionar (sumar) con el carrito guardado y se
+    // reescribiría en Supabase cada vez, duplicando la cantidad sin parar. Por
+    // eso solo restauramos cuando el usuario realmente cambia (login real).
+    const isNewSignIn = !currentUser || currentUser.id !== session.user.id;
     currentUser = session.user;
     await loadCustomerProfile();
-    await restoreServerCart();
+    if(isNewSignIn){
+      await restoreServerCart();
+    }
   }else{
     currentUser = null;
     customerProfile = { name: "", whatsapp: "" };
