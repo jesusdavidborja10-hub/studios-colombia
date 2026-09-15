@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel de administrador · STUDIOS COLOMBIA</title>
+<link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --bg:#0B0D12;
+    --panel:#12161F;
+    --panel2:#1A2029;
+    --border:#232935;
+    --text:#EDF2F7;
+    --muted:#8792A3;
+    --gold:#F4B942;
+    --blue:#2F5FDE;
+    --red:#E8433D;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Anton',sans-serif;
+    font-size:16px;
+    letter-spacing:0.4px;
+  }
+  .brand img{height:34px;width:34px;border-radius:50%;object-fit:contain;flex-shrink:0;}
+  .brand .gold{color:var(--gold);}
+
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+
+  h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:0.3px;margin:0;}
+  h2{font-size:19px;margin-bottom:18px;}
+  h3{font-size:15px;margin:24px 0 14px;color:var(--gold);}
+
+  .panel-section{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-top:3px solid var(--gold);
+    padding:22px;
+    margin-bottom:22px;
+  }
+
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field input[type=text], .field input[type=number], .field input[type=password], .field select{
+    width:100%;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 12px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+  }
+  .field input[type=file]{
+    width:100%;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+  .msg{font-size:12px;margin-top:10px;}
+  .msg.err{color:var(--red);}
+  .msg.ok{color:var(--gold);}
+
+  .btn-primary{
+    background:var(--gold);
+    color:#0B0D12;
+    border:none;
+    padding:11px 18px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-secondary{
+    background:none;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:9px 16px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .btn-secondary:hover{border-color:var(--red); color:var(--red);}
+
+  .row{display:flex;gap:8px;}
+  .row .field{flex:1;margin-bottom:0;}
+
+  .admin-list-row{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 0;border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+  .admin-list-row img{width:36px;height:36px;object-fit:cover;flex-shrink:0;}
+  .admin-list-row .n{flex:1;}
+  .admin-list-row select{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:11px;
+    padding:5px 6px;
+    max-width:140px;
+    font-family:'Inter',sans-serif;
+  }
+  .admin-list-row button{
+    background:none;border:1px solid var(--border);color:var(--red);
+    cursor:pointer;font-size:11px;padding:4px 8px;
+  }
+  .video-upload-btn{
+    background:none;border:1px solid var(--border);color:var(--blue);
+    cursor:pointer;font-size:11px;padding:4px 8px;
+    display:inline-flex;align-items:center;flex-shrink:0;
+  }
+  .video-upload-btn:hover{border-color:var(--blue);}
+
+  #loginSection{max-width:380px;margin:64px auto 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="logo-studios-colombia-favicon.png" alt="Studios Colombia">
+    <div><span class="gold">STUDIOS</span> COLOMBIA — Admin</div>
+  </div>
+  <button class="btn-secondary" id="logoutBtn" style="display:none;">Cerrar sesión</button>
+</header>
+
+<main>
+
+  <div class="panel-section" id="loginSection" style="display:none;">
+    <h2>Iniciar sesión de administrador</h2>
+    <div class="field">
+      <label>Correo</label>
+      <input type="text" id="loginEmail" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="Escribe tu contraseña">
+    </div>
+    <div id="loginMsg" class="msg err" style="display:none;"></div>
+    <button class="btn-primary" id="loginBtn" style="width:100%;">Entrar</button>
+  </div>
+
+  <div id="panelSection" style="display:none;">
+
+    <div class="panel-section">
+      <h2>Categorías</h2>
+      <div class="row">
+        <div class="field"><input type="text" id="catName" placeholder="Ej: Alertas de regalo"></div>
+        <button class="btn-primary" id="catAddBtn" style="flex:0 0 auto;padding:10px 16px;">Agregar</button>
+      </div>
+      <div id="catMsg" class="msg" style="display:none;"></div>
+      <div id="catManageList" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="panel-section">
+      <h2>Agregar animación</h2>
+      <div class="field">
+        <label>Nombre del producto</label>
+        <input type="text" id="pName" placeholder="Ej: Alerta corazón dorado">
+      </div>
+      <div class="field">
+        <label>Precio (número, ej: 15000)</label>
+        <input type="number" id="pPrice" placeholder="15000">
+      </div>
+      <div class="field">
+        <label>Categoría</label>
+        <select id="pCategory"></select>
+      </div>
+      <div class="field">
+        <label>Imagen (foto o miniatura)</label>
+        <input type="file" id="pImage" accept="image/*">
+        <div class="hint">Se comprime automáticamente para que quepa en el catálogo.</div>
+      </div>
+      <div class="field">
+        <label>Video del producto (opcional)</label>
+        <input type="file" id="pVideoFile" accept="video/*">
+        <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos).</div>
+      </div>
+      <div id="addMsg" class="msg" style="display:none;"></div>
+      <button class="btn-primary" id="pAddBtn" style="width:100%;">Agregar al catálogo</button>
+    </div>
+
+    <div class="panel-section">
+      <h2>Productos existentes</h2>
+      <div id="adminList"></div>
+    </div>
+
+    <div class="panel-section">
+      <h2>Ajustes de la tienda</h2>
+      <div class="field">
+        <label>Nombre de la tienda</label>
+        <input type="text" id="sName">
+      </div>
+      <div class="field">
+        <label>Texto del banner de promoción</label>
+        <input type="text" id="sPromo">
+      </div>
+      <div class="field">
+        <label>Número de WhatsApp (con código de país, sin +)</label>
+        <input type="text" id="sWhats">
+      </div>
+      <button class="btn-primary" id="saveSettingsBtn" style="width:100%;">Guardar ajustes</button>
+      <div id="settingsMsg" class="msg" style="display:none;"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---------- Supabase config (mismo proyecto que tienda-animaciones.html) ----------
+const SUPABASE_URL = "https://btzkbfaqsaqckkjwpjlo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wQYgJerJ_i_cH8OQ6110ng_XDqD9YQb";
+// storageKey propio para que la sesión de administrador no se mezcle con la
+// sesión de clientes de tienda-animaciones.html (misma origin, distinto localStorage key).
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { storageKey: "sb-admin-auth-token" }
+});
+
+const MAX_VIDEO_MB = 20;
+const VIDEO_BUCKET = "product-videos";
+
+const DEFAULT_SETTINGS = {
+  storeName: "STUDIOS COLOMBIA",
+  promoText: "🔥 Elige tus animaciones y arma tu pedido — te contesto por WhatsApp al momento.",
+  whatsapp: "573015751907"
+};
+
+let products = [];
+let categories = [];
+
+function formatPrice(n){
+  const num = Number(n) || 0;
+  return "$" + num.toLocaleString("es-CO");
+}
+
+// ---------- Admin check ----------
+async function checkIsAdmin(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return false;
+  const { data } = await sb.from("admins").select("id").eq("id", user.id).maybeSingle();
+  return !!data;
+}
+
+// ---------- Data loading ----------
+async function loadCategories(){
+  const { data, error } = await sb.from("categories").select("*").order("created_at", { ascending: true });
+  categories = error || !data ? [] : data;
+}
+
+async function loadProducts(){
+  const { data, error } = await sb.from("products").select("*").order("created_at", { ascending: true });
+  products = error || !data ? [] : data.map(p => ({
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    image: p.image,
+    videoUrl: p.video_url,
+    categoryId: p.category_id
+  }));
+}
+
+async function loadSettingsIntoForm(){
+  const { data, error } = await sb.from("settings").select("*").eq("id", 1).single();
+  const s = error || !data ? DEFAULT_SETTINGS : {
+    storeName: data.store_name,
+    promoText: data.promo_text,
+    whatsapp: data.whatsapp
+  };
+  document.getElementById("sName").value = s.storeName;
+  document.getElementById("sPromo").value = s.promoText;
+  document.getElementById("sWhats").value = s.whatsapp;
+}
+
+function categoryOptionsHtml(selectedId){
+  const sel = selectedId || "";
+  let html = `<option value="" ${sel === "" ? "selected" : ""}>Sin categoría</option>`;
+  html += categories.map(c => `<option value="${c.id}" ${c.id === sel ? "selected" : ""}>${c.name}</option>`).join("");
+  return html;
+}
+
+// ---------- Renderers ----------
+function renderAdminList(){
+  const el = document.getElementById("adminList");
+  if(products.length === 0){
+    el.innerHTML = '<div class="hint">No hay productos todavía.</div>';
+    return;
+  }
+  el.innerHTML = products.map(p => `
+    <div class="admin-list-row">
+      <img src="${p.image || ''}" alt="">
+      <div class="n">${p.name} — ${formatPrice(p.price)}${p.videoUrl ? " 🎬" : ""}</div>
+      <select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select>
+      <label class="video-upload-btn" title="Subir / reemplazar video">
+        🎬
+        <input type="file" accept="video/*" data-videoprod="${p.id}" style="display:none;">
+      </label>
+      <button data-del="${p.id}">Eliminar</button>
+    </div>
+  `).join("");
+}
+
+function renderCatManageList(){
+  const el = document.getElementById("catManageList");
+  if(categories.length === 0){
+    el.innerHTML = '<div class="hint">No hay categorías todavía.</div>';
+    return;
+  }
+  el.innerHTML = categories.map(c => `
+    <div class="admin-list-row">
+      <div class="n">${c.name}</div>
+      <button data-delcat="${c.id}">Eliminar</button>
+    </div>
+  `).join("");
+}
+
+// ---------- Image compression ----------
+function compressImage(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        let quality = 0.75;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        while(dataUrl.length > 1200000 && quality > 0.3){
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("No se pudo leer la imagen"));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- Video upload ----------
+async function uploadVideo(file){
+  const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await sb.storage.from(VIDEO_BUCKET).upload(path, file, {
+    cacheControl: "3600",
+    upsert: false
+  });
+  if(error) throw error;
+  const { data } = sb.storage.from(VIDEO_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ---------- Login flow ----------
+async function enterPanel(){
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("panelSection").style.display = "block";
+  document.getElementById("logoutBtn").style.display = "inline-block";
+
+  await loadCategories();
+  await loadProducts();
+  document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
+  renderCatManageList();
+  renderAdminList();
+  await loadSettingsIntoForm();
+}
+
+function showLogin(){
+  document.getElementById("panelSection").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("loginSection").style.display = "block";
+}
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const msgEl = document.getElementById("loginMsg");
+  msgEl.style.display = "none";
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    msgEl.textContent = "Correo o contraseña incorrectos.";
+    msgEl.style.display = "block";
+    return;
+  }
+  if(!(await checkIsAdmin())){
+    await sb.auth.signOut();
+    msgEl.textContent = "Esta cuenta no tiene permisos de administrador.";
+    msgEl.style.display = "block";
+    return;
+  }
+  await enterPanel();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  showLogin();
+});
+
+// ---------- Products / categories / settings CRUD ----------
+document.getElementById("pAddBtn").addEventListener("click", async () => {
+  const msgEl = document.getElementById("addMsg");
+  const name = document.getElementById("pName").value.trim();
+  const price = document.getElementById("pPrice").value;
+  const file = document.getElementById("pImage").files[0];
+  const videoFile = document.getElementById("pVideoFile").files[0];
+
+  if(!name || !price || !file){
+    msgEl.className = "msg err";
+    msgEl.textContent = "Completa nombre, precio e imagen.";
+    msgEl.style.display = "block";
+    return;
+  }
+
+  if(videoFile && videoFile.size > MAX_VIDEO_MB * 1024 * 1024){
+    msgEl.className = "msg err";
+    msgEl.textContent = `El video pesa demasiado (máximo ${MAX_VIDEO_MB} MB). Comprímelo o recórtalo e inténtalo de nuevo.`;
+    msgEl.style.display = "block";
+    return;
+  }
+
+  msgEl.className = "msg";
+  msgEl.textContent = "Procesando imagen...";
+  msgEl.style.display = "block";
+
+  try{
+    const imageData = await compressImage(file);
+
+    let videoUrl = null;
+    if(videoFile){
+      msgEl.textContent = "Subiendo video...";
+      videoUrl = await uploadVideo(videoFile);
+    }
+
+    const categoryId = document.getElementById("pCategory").value || null;
+    const { data, error } = await sb.from("products").insert({
+      name,
+      price: Number(price),
+      image: imageData,
+      video_url: videoUrl,
+      category_id: categoryId
+    }).select().single();
+    if(error) throw error;
+    products.push({
+      id: data.id,
+      name: data.name,
+      price: data.price,
+      image: data.image,
+      videoUrl: data.video_url,
+      categoryId: data.category_id
+    });
+    renderAdminList();
+    msgEl.className = "msg ok";
+    msgEl.textContent = "¡Agregado al catálogo!";
+    document.getElementById("pName").value = "";
+    document.getElementById("pPrice").value = "";
+    document.getElementById("pImage").value = "";
+    document.getElementById("pVideoFile").value = "";
+    document.getElementById("pCategory").value = "";
+  }catch(err){
+    msgEl.className = "msg err";
+    msgEl.textContent = "Hubo un problema guardando el producto. Intenta con otra imagen o video.";
+  }
+});
+
+document.getElementById("adminList").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-del]");
+  if(!b) return;
+  const id = b.dataset.del;
+  const { error } = await sb.from("products").delete().eq("id", id);
+  if(error) return;
+  products = products.filter(p => p.id !== id);
+  renderAdminList();
+});
+
+document.getElementById("adminList").addEventListener("change", async (e) => {
+  const sel = e.target.closest("select[data-catprod]");
+  if(sel){
+    const p = products.find(pr => pr.id === sel.dataset.catprod);
+    if(!p) return;
+    const categoryId = sel.value || null;
+    const { error } = await sb.from("products").update({ category_id: categoryId }).eq("id", p.id);
+    if(error) return;
+    p.categoryId = categoryId;
+    return;
+  }
+
+  const videoInput = e.target.closest("input[data-videoprod]");
+  if(videoInput){
+    const file = videoInput.files[0];
+    if(!file) return;
+    if(file.size > MAX_VIDEO_MB * 1024 * 1024){
+      alert(`El video pesa demasiado (máximo ${MAX_VIDEO_MB} MB). Comprímelo o recórtalo e inténtalo de nuevo.`);
+      videoInput.value = "";
+      return;
+    }
+    const p = products.find(pr => pr.id === videoInput.dataset.videoprod);
+    if(!p) return;
+    try{
+      const videoUrl = await uploadVideo(file);
+      const { error } = await sb.from("products").update({ video_url: videoUrl }).eq("id", p.id);
+      if(error) throw error;
+      p.videoUrl = videoUrl;
+      renderAdminList();
+    }catch(err){
+      alert("No se pudo subir el video. Intenta con otro archivo.");
+    }
+  }
+});
+
+document.getElementById("catAddBtn").addEventListener("click", async () => {
+  const input = document.getElementById("catName");
+  const msgEl = document.getElementById("catMsg");
+  const name = input.value.trim();
+  if(!name){
+    msgEl.className = "msg err";
+    msgEl.textContent = "Escribe un nombre de categoría.";
+    msgEl.style.display = "block";
+    return;
+  }
+  const { data, error } = await sb.from("categories").insert({ name }).select().single();
+  if(error){
+    msgEl.className = "msg err";
+    msgEl.textContent = "No se pudo crear la categoría.";
+    msgEl.style.display = "block";
+    return;
+  }
+  categories.push(data);
+  input.value = "";
+  msgEl.style.display = "none";
+  renderCatManageList();
+  document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
+  renderAdminList();
+});
+
+document.getElementById("catManageList").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-delcat]");
+  if(!b) return;
+  const id = b.dataset.delcat;
+  const { error } = await sb.from("categories").delete().eq("id", id);
+  if(error) return;
+  categories = categories.filter(c => c.id !== id);
+  await loadProducts(); // la BD ya puso category_id en null vía ON DELETE SET NULL
+  renderCatManageList();
+  document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
+  renderAdminList();
+});
+
+document.getElementById("saveSettingsBtn").addEventListener("click", async () => {
+  const msgEl = document.getElementById("settingsMsg");
+  const newSettings = {
+    storeName: document.getElementById("sName").value.trim() || DEFAULT_SETTINGS.storeName,
+    promoText: document.getElementById("sPromo").value.trim() || DEFAULT_SETTINGS.promoText,
+    whatsapp: document.getElementById("sWhats").value.trim().replace(/[^0-9]/g,"") || DEFAULT_SETTINGS.whatsapp
+  };
+  const { error } = await sb.from("settings").update({
+    store_name: newSettings.storeName,
+    promo_text: newSettings.promoText,
+    whatsapp: newSettings.whatsapp
+  }).eq("id", 1);
+  msgEl.className = error ? "msg err" : "msg ok";
+  msgEl.textContent = error ? "No se pudieron guardar los ajustes." : "Ajustes guardados.";
+  msgEl.style.display = "block";
+});
+
+// ---------- Init ----------
+(async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && (await checkIsAdmin())){
+    await enterPanel();
+    return;
+  }
+  if(session){
+    await sb.auth.signOut();
+  }
+  showLogin();
+})();
+</script>
+</body>
+</html>
