@@ -938,8 +938,6 @@
 
 <p class="welcome-msg">En Studios Colombia no eres solo un cliente más, eres familia. Te acompañamos en cada paso, con calidez y confianza, para que te sientas como en casa. 🧡</p>
 
-<div class="promo" id="promoBanner"></div>
-
 <main>
   <div class="cat-tabs main-nav-tabs">
     <button class="cat-tab active" id="navCatalogBtn">Catálogo de animaciones</button>
@@ -1133,7 +1131,6 @@ async function loadSettings(){
     settings = { ...DEFAULT_SETTINGS };
   }
   document.getElementById("storeNameDisplay").textContent = settings.storeName;
-  document.getElementById("promoBanner").innerHTML = escapeHtml(settings.promoText);
 }
 
 async function loadProducts(){
