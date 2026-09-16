@@ -88,23 +88,46 @@
     to{background-position:100% 0;}
   }
   .btn-account{
-    background:var(--panel2);
-    border:1px solid var(--border);
-    color:var(--text);
+    background:linear-gradient(135deg, #FFD873 0%, var(--gold) 55%, #D89A2E 100%);
+    border:1px solid rgba(244,185,66,0.6);
+    color:#14100E;
     font-size:12px;
     font-weight:700;
-    padding:8px 14px;
+    padding:9px 16px;
     cursor:pointer;
     white-space:nowrap;
-    max-width:160px;
+    max-width:180px;
+    border-radius:8px;
+    position:relative;
     overflow:hidden;
-    text-overflow:ellipsis;
-    transition:border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:box-shadow 0.25s ease, transform 0.15s ease;
+    animation:accountPulse 4s ease-in-out infinite;
+  }
+  .btn-account-icon{flex-shrink:0;}
+  .btn-account-label{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+  .btn-account::after{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.65) 50%, transparent 100%);
+    transform:skewX(-20deg);
+    transition:left 0.6s ease;
+    pointer-events:none;
   }
   .btn-account:hover{
-    border-color:var(--gold);
-    color:var(--gold);
-    box-shadow:0 0 14px rgba(244,185,66,0.35);
+    box-shadow:0 0 0 1px var(--gold), 0 0 18px rgba(244,185,66,0.55);
+    transform:translateY(-1px);
+    animation-play-state:paused;
+  }
+  .btn-account:hover::after{left:130%;}
+  .btn-account:active{transform:scale(0.97);}
+  @keyframes accountPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(244,185,66,0.4);}
+    50%{box-shadow:0 0 12px 3px rgba(244,185,66,0.5);}
   }
   @media (max-width:520px){
     .tagline-desktop{display:none;}
@@ -867,7 +890,10 @@
   <div class="logo"><img src="logo-studios-colombia-header.png" alt="Studios Colombia" class="logo-mark"><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
   <div style="display:flex;align-items:center;gap:14px;">
     <div style="font-size:13px;color:var(--muted)" class="tagline-desktop">Catálogo de animaciones</div>
-    <button id="accountBtn" class="btn-account">Iniciar sesión</button>
+    <button id="accountBtn" class="btn-account">
+      <svg class="btn-account-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span class="btn-account-label">Iniciar sesión</span>
+    </button>
   </div>
 </header>
 
@@ -1546,8 +1572,8 @@ function updateQuickFieldsVisibility(){
 }
 
 function updateAccountUI(){
-  const btn = document.getElementById("accountBtn");
-  btn.textContent = currentUser ? ("👤 " + (customerProfile.name || "Mi cuenta")) : "Iniciar sesión";
+  const label = document.getElementById("accountBtn").querySelector(".btn-account-label");
+  label.textContent = currentUser ? (customerProfile.name || "Mi cuenta") : "Iniciar sesión";
   updateQuickFieldsVisibility();
 }
 
