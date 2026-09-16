@@ -441,6 +441,16 @@ function truncate(str, n){
   return str.length > n ? str.slice(0, n - 1) + "…" : str;
 }
 
+function escapeHtml(str){
+  if(str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // ---------- Tabs ----------
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -511,7 +521,7 @@ async function loadSettingsIntoForm(){
 function categoryOptionsHtml(selectedId){
   const sel = selectedId || "";
   let html = `<option value="" ${sel === "" ? "selected" : ""}>Sin categoría</option>`;
-  html += categories.map(c => `<option value="${c.id}" ${c.id === sel ? "selected" : ""}>${c.name}</option>`).join("");
+  html += categories.map(c => `<option value="${c.id}" ${c.id === sel ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("");
   return html;
 }
 
@@ -524,8 +534,8 @@ function renderAdminList(){
   }
   el.innerHTML = products.map(p => `
     <tr>
-      <td><img src="${p.image || ''}" alt=""></td>
-      <td>${p.name}${p.videoUrl ? " 🎬" : ""}</td>
+      <td><img src="${escapeHtml(p.image || '')}" alt=""></td>
+      <td>${escapeHtml(p.name)}${p.videoUrl ? " 🎬" : ""}</td>
       <td>${formatPrice(p.price)}</td>
       <td><select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select></td>
       <td class="actions-cell">
@@ -546,7 +556,7 @@ function renderCatManageList(){
     return;
   }
   el.innerHTML = categories.map(c => `
-    <span class="chip">${c.name}<button data-delcat="${c.id}" aria-label="Eliminar categoría" title="Eliminar categoría">×</button></span>
+    <span class="chip">${escapeHtml(c.name)}<button data-delcat="${c.id}" aria-label="Eliminar categoría" title="Eliminar categoría">×</button></span>
   `).join("");
 }
 
@@ -570,13 +580,13 @@ function renderCustomOptionsList(){
       <div class="co-card-header">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
           ${o.image_url
-            ? `<img src="${o.image_url}" alt="" style="width:40px;height:40px;object-fit:cover;flex-shrink:0;">`
+            ? `<img src="${escapeHtml(o.image_url)}" alt="" style="width:40px;height:40px;object-fit:cover;flex-shrink:0;">`
             : `<div style="width:40px;height:40px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);">🖼️</div>`}
-          <span class="co-title">${o.title}</span>
+          <span class="co-title">${escapeHtml(o.title)}</span>
         </div>
         <span class="co-price">${formatPrice(o.price)}</span>
       </div>
-      <div class="co-desc">${truncate(o.description || "Sin descripción", 90)} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
+      <div class="co-desc">${escapeHtml(truncate(o.description || "Sin descripción", 90))} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
       <div class="co-actions">
         <button class="edit-btn" data-editco="${o.id}">Editar</button>
         <button data-delco="${o.id}">Eliminar</button>

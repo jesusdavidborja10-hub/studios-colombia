@@ -1088,6 +1088,16 @@ function formatPrice(n){
   return "$" + num.toLocaleString("es-CO");
 }
 
+function escapeHtml(str){
+  if(str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function loadSettings(){
   try{
     const { data, error } = await sb.from("settings").select("*").eq("id", 1).single();
@@ -1101,7 +1111,7 @@ async function loadSettings(){
     settings = { ...DEFAULT_SETTINGS };
   }
   document.getElementById("storeNameDisplay").textContent = settings.storeName;
-  document.getElementById("promoBanner").innerHTML = settings.promoText;
+  document.getElementById("promoBanner").innerHTML = escapeHtml(settings.promoText);
 }
 
 async function loadProducts(){
@@ -1132,7 +1142,7 @@ function renderCategoryTabs(){
   el.style.display = "flex";
   const tabs = [{ id: null, name: "Todas" }, ...categories];
   el.innerHTML = tabs.map(t => `
-    <button class="cat-tab ${activeCategory === t.id ? "active" : ""}" data-cat="${t.id === null ? "" : t.id}">${t.name}</button>
+    <button class="cat-tab ${activeCategory === t.id ? "active" : ""}" data-cat="${t.id === null ? "" : t.id}">${escapeHtml(t.name)}</button>
   `).join("");
 }
 
@@ -1151,11 +1161,11 @@ function renderGrid(){
     <div class="card-wrap">
       <div class="card">
         <div class="thumb-wrap" ${p.videoUrl ? `data-has-video="1" data-video-pid="${p.id}"` : ""}>
-          <img src="${p.image || ''}" alt="${p.name}">
+          <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}">
           ${p.videoUrl ? `<button class="preview-toggle" type="button">▶ Ver preview</button>` : ""}
         </div>
         <div class="card-body">
-          <div class="card-name">${p.name}</div>
+          <div class="card-name">${escapeHtml(p.name)}</div>
           <div class="card-bottom">
             <div class="price">${formatPrice(p.price)}</div>
             <button class="btn-add" data-id="${p.id}">Agregar</button>
@@ -1313,12 +1323,12 @@ function renderCustomGrid(){
     <div class="card-wrap">
       <div class="card">
         <div class="thumb-wrap" ${opt.videoUrl ? `data-has-video="1" data-video-pid="${opt.id}"` : ""}>
-          ${opt.imageUrl ? `<img src="${opt.imageUrl}" alt="${opt.title}">` : `<div class="thumb-placeholder">🖼️</div>`}
+          ${opt.imageUrl ? `<img src="${escapeHtml(opt.imageUrl)}" alt="${escapeHtml(opt.title)}">` : `<div class="thumb-placeholder">🖼️</div>`}
           ${opt.videoUrl ? `<button class="preview-toggle" type="button">▶ Ver preview</button>` : ""}
         </div>
         <div class="card-body">
-          <div class="card-name">${opt.title}</div>
-          ${opt.description ? `<div class="custom-desc">${opt.description}</div>` : ""}
+          <div class="card-name">${escapeHtml(opt.title)}</div>
+          ${opt.description ? `<div class="custom-desc">${escapeHtml(opt.description)}</div>` : ""}
           <div class="price">${formatPrice(opt.price)}</div>
           <div class="custom-card-actions">
             <button class="btn-add" data-custom-order="${opt.id}">Pedir por WhatsApp</button>
@@ -1443,9 +1453,9 @@ function renderCart(){
     if(!p) return "";
     return `
       <div class="cart-row">
-        <img src="${p.image || ''}" alt="${p.name}">
+        <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}">
         <div class="info">
-          <div class="n">${p.name}</div>
+          <div class="n">${escapeHtml(p.name)}</div>
           <div class="p">${formatPrice(p.price)} c/u</div>
         </div>
         <div class="qty-ctrl">
@@ -1585,10 +1595,10 @@ async function renderOrderHistory(){
   el.innerHTML = data.map(o => {
     const date = new Date(o.created_at).toLocaleDateString("es-CO", { day:"numeric", month:"short", year:"numeric" });
     const channelLabel = o.status === "paypal_paid" ? "PayPal" : "WhatsApp";
-    const itemsHtml = (o.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
+    const itemsHtml = (o.items || []).map(i => `${escapeHtml(i.name)} x${escapeHtml(i.qty)}`).join(", ");
     return `
       <div class="order-card">
-        <div class="order-date">${date}<span class="order-channel">${channelLabel}</span></div>
+        <div class="order-date">${escapeHtml(date)}<span class="order-channel">${escapeHtml(channelLabel)}</span></div>
         <div>${itemsHtml}</div>
         <div class="order-total">${formatPrice(o.total)}</div>
       </div>
