@@ -772,6 +772,56 @@
     transition:color 0.2s ease;
   }
   .input-toggle-visibility:hover{color:var(--gold);}
+
+  /* ---------- CUSTOM OPTIONS PROMO POPUP ---------- */
+  .promo-box{
+    max-width:380px;
+    padding:30px 24px 24px 24px;
+    position:relative;
+    text-align:center;
+  }
+  .promo-close{
+    position:absolute;
+    top:10px; right:10px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:14px;
+    cursor:pointer;
+    width:28px; height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    transition:color 0.2s ease, background 0.2s ease;
+  }
+  .promo-close:hover{color:var(--gold); background:rgba(244,185,66,0.12);}
+  .promo-box .promo-title{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:19px;
+    line-height:1.3;
+    margin:0 0 10px 0;
+  }
+  .promo-text{
+    color:var(--muted);
+    font-size:13.5px;
+    line-height:1.5;
+    margin:0 0 22px 0;
+  }
+  .promo-box .modal-actions{
+    flex-direction:column;
+    gap:10px;
+    margin-top:0;
+  }
+  .promo-box .btn-secondary{
+    background:none;
+    border:none;
+    color:var(--muted);
+    text-decoration:underline;
+    padding:4px;
+  }
+  .promo-box .btn-secondary:hover{border-color:transparent; color:var(--gold);}
   #custQuickFields{margin-bottom:12px;}
   #custQuickFields input{
     width:100%;
@@ -943,6 +993,19 @@
         <button class="btn-secondary" id="accountCloseBtn2" style="flex:1;">Cerrar</button>
         <button class="btn-secondary" id="custLogoutBtn" style="flex:1;color:var(--red);">Cerrar sesión</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom options promo popup -->
+<div class="modal-overlay" id="customPromoModal">
+  <div class="modal-box promo-box">
+    <button type="button" class="promo-close" id="promoCloseX" aria-label="Cerrar">✕</button>
+    <h3 class="promo-title">✨ ¿Sabías que puedes personalizar tu animación?</h3>
+    <p class="promo-text">Tenemos opciones hechas a tu gusto, con tu estilo y presupuesto. Descúbrelas.</p>
+    <div class="modal-actions">
+      <button class="btn-primary" id="promoGoCustomBtn">Ver Personalizados y Precios</button>
+      <button class="btn-secondary" id="promoDismissBtn">Ver el catálogo</button>
     </div>
   </div>
 </div>
@@ -1701,6 +1764,45 @@ document.getElementById("saveProfileBtn").addEventListener("click", async () => 
 document.getElementById("custLogoutBtn").addEventListener("click", async () => {
   await sb.auth.signOut();
   hideAccountModal();
+});
+
+// ---------- Custom options promo popup ----------
+function isAnyModalOpen(){
+  return Array.from(document.querySelectorAll(".modal-overlay")).some(el => el.classList.contains("open"));
+}
+function showCustomPromoModal(){
+  const modal = document.getElementById("customPromoModal");
+  modal.style.display = "flex";
+  modal.classList.remove("closing");
+  requestAnimationFrame(() => modal.classList.add("open"));
+}
+function hideCustomPromoModal(){
+  const modal = document.getElementById("customPromoModal");
+  modal.classList.remove("open");
+  modal.classList.add("closing");
+  setTimeout(() => {
+    if(modal.classList.contains("closing")){
+      modal.style.display = "none";
+      modal.classList.remove("closing");
+    }
+  }, 220);
+}
+setTimeout(() => {
+  if(sessionStorage.getItem("customPromoShown")) return;
+  const onCustomSection = document.getElementById("customSection").style.display !== "none";
+  if(onCustomSection || isAnyModalOpen()) return;
+  sessionStorage.setItem("customPromoShown", "1");
+  showCustomPromoModal();
+}, 10000);
+document.getElementById("promoGoCustomBtn").addEventListener("click", () => {
+  hideCustomPromoModal();
+  switchMainSection("custom");
+});
+document.getElementById("promoDismissBtn").addEventListener("click", () => {
+  hideCustomPromoModal();
+});
+document.getElementById("promoCloseX").addEventListener("click", () => {
+  hideCustomPromoModal();
 });
 
 // ---------- Init ----------
