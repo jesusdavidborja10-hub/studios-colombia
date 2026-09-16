@@ -536,16 +536,33 @@
     justify-content:center;
     z-index:50;
     padding:20px;
+    opacity:0;
+    backdrop-filter:blur(0px);
+    -webkit-backdrop-filter:blur(0px);
+    transition:opacity 0.25s ease, backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease;
+  }
+  .modal-overlay.open{
+    opacity:1;
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
   }
   .modal-box{
     background:var(--panel);
     border:1px solid var(--border);
     border-top:3px solid var(--gold);
+    border-radius:14px;
     padding:26px;
     max-width:460px;
     width:100%;
     max-height:88vh;
     overflow-y:auto;
+    transform:translateY(16px) scale(0.96);
+    opacity:0;
+    transition:transform 0.3s cubic-bezier(.22,.85,.32,1.1), opacity 0.25s ease;
+  }
+  .modal-overlay.open .modal-box{
+    transform:translateY(0) scale(1);
+    opacity:1;
   }
   .modal-box h3{
     font-family:'Anton',sans-serif;
@@ -560,9 +577,16 @@
     background:var(--panel2);
     border:1px solid var(--border);
     color:var(--text);
-    padding:10px 12px;
+    padding:11px 14px;
     font-size:14px;
     font-family:'Inter',sans-serif;
+    border-radius:8px;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field input[type=text]:focus, .field input[type=number]:focus, .field input[type=password]:focus, .field input[type=url]:focus, .field select:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(244,185,66,0.18);
   }
   .field input[type=file]{
     width:100%;
@@ -574,39 +598,172 @@
     background:var(--gold);
     color:#0B0D12;
     border:none;
-    padding:11px 18px;
+    padding:12px 18px;
     font-weight:700;
     cursor:pointer;
     flex:1;
+    border-radius:8px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:box-shadow 0.15s ease, transform 0.1s ease, opacity 0.2s ease;
   }
+  .btn-primary::after{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width:40%; height:100%;
+    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+    transform:skewX(-20deg);
+    transition:left 0.6s ease;
+    pointer-events:none;
+  }
+  .btn-primary:hover{
+    box-shadow:0 0 0 1px var(--gold), 0 0 18px rgba(244,185,66,0.5);
+  }
+  .btn-primary:hover::after{left:130%;}
+  .btn-primary:active{transform:scale(0.97);}
+  .btn-primary:disabled{cursor:not-allowed; opacity:0.85;}
+  .btn-primary .btn-spinner{
+    display:none;
+    width:14px; height:14px;
+    border:2px solid rgba(11,13,18,0.3);
+    border-top-color:#0B0D12;
+    border-radius:50%;
+    animation:btnSpin 0.7s linear infinite;
+    flex-shrink:0;
+  }
+  .btn-primary.loading .btn-spinner{display:inline-block;}
+  @keyframes btnSpin{to{transform:rotate(360deg);}}
   .btn-secondary{
     background:none;
     border:1px solid var(--border);
     color:var(--muted);
     padding:11px 18px;
     cursor:pointer;
+    border-radius:8px;
+    transition:border-color 0.2s ease, color 0.2s ease;
   }
-  .msg{font-size:12px;margin-top:8px;}
-  .msg.err{color:var(--red);}
-  .msg.ok{color:var(--gold);}
+  .btn-secondary:hover{border-color:var(--gold); color:var(--gold);}
+  .msg{
+    display:none;
+    font-size:12.5px;
+    line-height:1.45;
+    margin-top:10px;
+    padding:10px 12px 10px 34px;
+    border-radius:8px;
+    position:relative;
+    animation:msgIn 0.25s ease;
+  }
+  .msg::before{
+    position:absolute;
+    left:12px; top:10px;
+    font-size:13px;
+    line-height:1;
+  }
+  .msg.err{
+    color:#FFD9D6;
+    background:rgba(232,67,61,0.12);
+    border:1px solid rgba(232,67,61,0.45);
+  }
+  .msg.err::before{content:"⚠"; color:var(--red);}
+  .msg.ok{
+    color:var(--gold);
+    background:rgba(244,185,66,0.12);
+    border:1px solid rgba(244,185,66,0.4);
+  }
+  .msg.ok::before{content:"✓"; color:var(--gold);}
+  @keyframes msgIn{
+    from{opacity:0; transform:translateY(-4px);}
+    to{opacity:1; transform:translateY(0);}
+  }
   .hint{font-size:11px;color:var(--muted);margin-top:4px;}
 
   /* ---------- CUSTOMER ACCOUNT ---------- */
-  .auth-toggle{
+  .auth-header{
     text-align:center;
-    margin-top:12px;
-    font-size:12px;
-    color:var(--muted);
+    margin-bottom:18px;
   }
-  .auth-toggle button{
+  .auth-logo{
+    height:56px;
+    width:56px;
+    border-radius:50%;
+    object-fit:contain;
+    box-shadow:0 0 0 2px rgba(244,185,66,0.3), 0 0 14px 2px rgba(244,185,66,0.4);
+    margin-bottom:10px;
+  }
+  .auth-tabs{
+    display:flex;
+    position:relative;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:4px;
+    margin-bottom:18px;
+  }
+  .auth-tab{
+    flex:1;
     background:none;
     border:none;
-    color:var(--blue);
-    text-decoration:underline;
+    padding:9px 10px;
+    font-size:13px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+    color:var(--muted);
     cursor:pointer;
-    font-size:12px;
-    padding:0;
+    border-radius:7px;
+    position:relative;
+    z-index:1;
+    transition:color 0.25s ease;
   }
+  .auth-tab.active{color:#0B0D12;}
+  .auth-tab-indicator{
+    position:absolute;
+    top:4px; left:4px;
+    width:calc(50% - 4px);
+    height:calc(100% - 8px);
+    background:var(--gold);
+    border-radius:7px;
+    transition:transform 0.28s cubic-bezier(.3,.9,.3,1.1);
+    z-index:0;
+  }
+  .input-icon-wrap{
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+  .input-icon-wrap input{
+    padding-left:38px !important;
+  }
+  .input-icon-wrap.has-toggle input{
+    padding-right:38px !important;
+  }
+  .input-icon-wrap .input-icon{
+    position:absolute;
+    left:12px;
+    display:flex;
+    color:var(--muted);
+    pointer-events:none;
+    transition:color 0.2s ease;
+  }
+  .input-icon-wrap:focus-within .input-icon{color:var(--gold);}
+  .input-toggle-visibility{
+    position:absolute;
+    right:8px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    padding:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:color 0.2s ease;
+  }
+  .input-toggle-visibility:hover{color:var(--gold);}
   #custQuickFields{margin-bottom:12px;}
   #custQuickFields input{
     width:100%;
@@ -717,23 +874,39 @@
   <div class="modal-box">
     <!-- Logged out: login / signup -->
     <div id="accountLoggedOut">
-      <h3 id="accountAuthTitle">Iniciar sesión</h3>
+      <div class="auth-header">
+        <img src="logo-studios-colombia.png" alt="Studios Colombia" class="auth-logo">
+        <h3 id="accountAuthTitle">Bienvenido de nuevo</h3>
+      </div>
+
+      <div class="auth-tabs">
+        <span class="auth-tab-indicator" id="authTabIndicator"></span>
+        <button type="button" class="auth-tab active" id="authTabLogin">Iniciar sesión</button>
+        <button type="button" class="auth-tab" id="authTabSignup">Registrarme</button>
+      </div>
+
       <div class="field">
         <label>Correo</label>
-        <input type="text" id="custEmail" placeholder="tucorreo@ejemplo.com">
+        <div class="input-icon-wrap">
+          <span class="input-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></span>
+          <input type="text" id="custEmail" placeholder="tucorreo@ejemplo.com">
+        </div>
       </div>
       <div class="field">
         <label>Contraseña</label>
-        <input type="password" id="custPassword" placeholder="Escribe tu contraseña">
+        <div class="input-icon-wrap has-toggle">
+          <span class="input-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
+          <input type="password" id="custPassword" placeholder="Escribe tu contraseña">
+          <button type="button" class="input-toggle-visibility" id="togglePasswordBtn" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+        </div>
       </div>
       <div id="accountAuthMsg" class="msg err" style="display:none;"></div>
       <div class="modal-actions">
-        <button class="btn-primary" id="custAuthSubmit">Iniciar sesión</button>
+        <button class="btn-primary" id="custAuthSubmit">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-label">Iniciar sesión</span>
+        </button>
         <button class="btn-secondary" id="accountCloseBtn1">Cerrar</button>
-      </div>
-      <div class="auth-toggle">
-        <span id="accountAuthToggleText">¿No tienes cuenta?</span>
-        <button id="accountAuthToggleBtn">Regístrate</button>
       </div>
     </div>
 
@@ -1377,6 +1550,37 @@ document.getElementById("cartItems").addEventListener("click", (e) => {
 document.getElementById("sendWhatsapp").addEventListener("click", sendOrderWhatsapp);
 
 // ---------- Customer account UI ----------
+function showAccountModal(){
+  const modal = document.getElementById("accountModal");
+  modal.style.display = "flex";
+  modal.classList.remove("closing");
+  requestAnimationFrame(() => modal.classList.add("open"));
+}
+function hideAccountModal(){
+  const modal = document.getElementById("accountModal");
+  modal.classList.remove("open");
+  modal.classList.add("closing");
+  setTimeout(() => {
+    if(modal.classList.contains("closing")){
+      modal.style.display = "none";
+      modal.classList.remove("closing");
+    }
+  }, 220);
+}
+
+const EYE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
+function updateAuthModeUI(){
+  const isLogin = authMode === "login";
+  document.getElementById("authTabLogin").classList.toggle("active", isLogin);
+  document.getElementById("authTabSignup").classList.toggle("active", !isLogin);
+  document.getElementById("authTabIndicator").style.transform = isLogin ? "translateX(0)" : "translateX(100%)";
+  document.getElementById("accountAuthTitle").textContent = isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta";
+  document.getElementById("custAuthSubmit").querySelector(".btn-label").textContent = isLogin ? "Iniciar sesión" : "Registrarme";
+  document.getElementById("accountAuthMsg").style.display = "none";
+}
+
 document.getElementById("accountBtn").addEventListener("click", async () => {
   document.getElementById("accountAuthMsg").style.display = "none";
   if(currentUser){
@@ -1388,48 +1592,66 @@ document.getElementById("accountBtn").addEventListener("click", async () => {
     renderOrderHistory();
   }else{
     authMode = "login";
-    document.getElementById("accountAuthTitle").textContent = "Iniciar sesión";
-    document.getElementById("custAuthSubmit").textContent = "Iniciar sesión";
-    document.getElementById("accountAuthToggleText").textContent = "¿No tienes cuenta?";
-    document.getElementById("accountAuthToggleBtn").textContent = "Regístrate";
+    updateAuthModeUI();
     document.getElementById("accountLoggedOut").style.display = "block";
     document.getElementById("accountLoggedIn").style.display = "none";
     document.getElementById("custEmail").value = "";
     document.getElementById("custPassword").value = "";
   }
-  document.getElementById("accountModal").style.display = "flex";
+  showAccountModal();
 });
 document.getElementById("accountCloseBtn1").addEventListener("click", () => {
-  document.getElementById("accountModal").style.display = "none";
+  hideAccountModal();
 });
 document.getElementById("accountCloseBtn2").addEventListener("click", () => {
-  document.getElementById("accountModal").style.display = "none";
+  hideAccountModal();
 });
 
-document.getElementById("accountAuthToggleBtn").addEventListener("click", () => {
-  authMode = authMode === "login" ? "signup" : "login";
-  document.getElementById("accountAuthTitle").textContent = authMode === "login" ? "Iniciar sesión" : "Crear cuenta";
-  document.getElementById("custAuthSubmit").textContent = authMode === "login" ? "Iniciar sesión" : "Crear cuenta";
-  document.getElementById("accountAuthToggleText").textContent = authMode === "login" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?";
-  document.getElementById("accountAuthToggleBtn").textContent = authMode === "login" ? "Regístrate" : "Inicia sesión";
-  document.getElementById("accountAuthMsg").style.display = "none";
+document.getElementById("authTabLogin").addEventListener("click", () => {
+  if(authMode === "login") return;
+  authMode = "login";
+  updateAuthModeUI();
+});
+document.getElementById("authTabSignup").addEventListener("click", () => {
+  if(authMode === "signup") return;
+  authMode = "signup";
+  updateAuthModeUI();
+});
+
+document.getElementById("togglePasswordBtn").addEventListener("click", () => {
+  const pwd = document.getElementById("custPassword");
+  const btn = document.getElementById("togglePasswordBtn");
+  const show = pwd.type === "password";
+  pwd.type = show ? "text" : "password";
+  btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+  btn.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
 });
 
 document.getElementById("custAuthSubmit").addEventListener("click", async () => {
   const email = document.getElementById("custEmail").value.trim();
   const password = document.getElementById("custPassword").value;
   const msgEl = document.getElementById("accountAuthMsg");
+  const submitBtn = document.getElementById("custAuthSubmit");
+  const labelEl = submitBtn.querySelector(".btn-label");
   if(!email || !password){
     msgEl.className = "msg err";
     msgEl.textContent = "Completa correo y contraseña.";
     msgEl.style.display = "block";
     return;
   }
+  const originalLabel = labelEl.textContent;
+  submitBtn.disabled = true;
+  submitBtn.classList.add("loading");
+  labelEl.textContent = authMode === "login" ? "Ingresando..." : "Creando cuenta...";
+
   const result = authMode === "login"
     ? await sb.auth.signInWithPassword({ email, password })
     : await sb.auth.signUp({ email, password });
 
   if(result.error){
+    submitBtn.disabled = false;
+    submitBtn.classList.remove("loading");
+    labelEl.textContent = originalLabel;
     msgEl.className = "msg err";
     msgEl.textContent = authMode === "login"
       ? "Correo o contraseña incorrectos."
@@ -1438,12 +1660,18 @@ document.getElementById("custAuthSubmit").addEventListener("click", async () => 
     return;
   }
   if(authMode === "signup" && !result.data.session){
+    submitBtn.disabled = false;
+    submitBtn.classList.remove("loading");
+    labelEl.textContent = originalLabel;
     msgEl.className = "msg ok";
     msgEl.textContent = "¡Cuenta creada! Revisa tu correo para confirmarla antes de iniciar sesión.";
     msgEl.style.display = "block";
     return;
   }
-  document.getElementById("accountModal").style.display = "none";
+  submitBtn.disabled = false;
+  submitBtn.classList.remove("loading");
+  labelEl.textContent = originalLabel;
+  hideAccountModal();
 });
 
 document.getElementById("saveProfileBtn").addEventListener("click", async () => {
@@ -1458,7 +1686,7 @@ document.getElementById("saveProfileBtn").addEventListener("click", async () => 
 
 document.getElementById("custLogoutBtn").addEventListener("click", async () => {
   await sb.auth.signOut();
-  document.getElementById("accountModal").style.display = "none";
+  hideAccountModal();
 });
 
 // ---------- Init ----------
