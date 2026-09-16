@@ -135,6 +135,14 @@
     letter-spacing:0.5px;
     margin:8px 0 22px 0;
   }
+  .custom-intro{
+    color:var(--muted);
+    font-size:14.5px;
+    line-height:1.55;
+    max-width:640px;
+    margin:-12px 0 24px 0;
+  }
+  .custom-intro .intro-scroll{color:var(--gold);}
 
   /* ---------- CATEGORY TABS ---------- */
   .cat-tabs{
@@ -829,6 +837,10 @@
 
   <section id="customSection" style="display:none;">
     <h2 class="section-title">Personalizados y Precios</h2>
+    <p class="custom-intro">
+      Estas son animaciones hechas a la medida según lo que necesites — elige la opción que más se ajuste a tu presupuesto y estilo.
+      <span class="intro-scroll" id="customIntroScroll"> 👇 Desliza hacia abajo para ver todas las opciones disponibles.</span>
+    </p>
     <div class="grid" id="customGrid"></div>
   </section>
 </main>
@@ -1183,6 +1195,8 @@ async function loadCustomOptions(){
 
 function renderCustomGrid(){
   const grid = document.getElementById("customGrid");
+  const introScroll = document.getElementById("customIntroScroll");
+  if(introScroll) introScroll.style.display = customOptions.length < 2 ? "none" : "inline";
   if(customOptions.length === 0){
     grid.innerHTML = '<div class="empty-state">Muy pronto vas a poder ver aquí las opciones personalizadas.</div>';
     return;
