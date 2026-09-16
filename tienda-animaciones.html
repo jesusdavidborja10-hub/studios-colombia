@@ -183,12 +183,25 @@
     padding:9px 16px;
     cursor:pointer;
     clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-    transition:border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    transition:border-color 0.15s ease, color 0.25s ease, background 0.25s ease, box-shadow 0.15s ease;
   }
   .cat-tab:hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 12px rgba(47,95,222,0.35);}
   .cat-tab.active{background:var(--gold); color:#14100E; border-color:var(--gold);}
   .main-nav-tabs{margin:0 0 26px 0;}
   .main-nav-tabs .cat-tab{font-size:14px;padding:11px 18px;}
+
+  /* ---------- MAIN SECTION SWITCH ---------- */
+  #catalogSection, #customSection{
+    transition:opacity 0.2s ease, transform 0.2s ease;
+  }
+  #catalogSection.section-leaving, #customSection.section-leaving{
+    opacity:0;
+    transform:translateY(-10px);
+  }
+  #catalogSection.section-entering, #customSection.section-entering{
+    opacity:0;
+    transform:translateY(14px);
+  }
 
   /* ---------- GRID ---------- */
   .grid{
@@ -429,7 +442,10 @@
     background:rgba(0,0,0,0.6);
     display:none;
     z-index:40;
+    opacity:0;
+    transition:opacity 0.3s ease-out;
   }
+  #overlay.open{opacity:1;}
   #cartPanel{
     position:fixed;
     top:0; right:0;
@@ -442,7 +458,10 @@
     display:none;
     flex-direction:column;
     padding:22px;
+    transform:translateX(100%);
+    transition:transform 0.3s ease-out;
   }
+  #cartPanel.open{transform:translateX(0);}
   #cartPanel h3{
     font-family:'Anton',sans-serif;
     font-weight:400;
@@ -1328,8 +1347,21 @@ function switchMainSection(section){
   const isCatalog = section === "catalog";
   document.getElementById("navCatalogBtn").classList.toggle("active", isCatalog);
   document.getElementById("navCustomBtn").classList.toggle("active", !isCatalog);
-  document.getElementById("catalogSection").style.display = isCatalog ? "block" : "none";
-  document.getElementById("customSection").style.display = isCatalog ? "none" : "block";
+
+  const incoming = document.getElementById(isCatalog ? "catalogSection" : "customSection");
+  const outgoing = document.getElementById(isCatalog ? "customSection" : "catalogSection");
+  if(incoming.style.display !== "none") return;
+
+  outgoing.classList.add("section-leaving");
+  setTimeout(() => {
+    outgoing.classList.remove("section-leaving");
+    outgoing.style.display = "none";
+    incoming.classList.add("section-entering");
+    incoming.style.display = "block";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => incoming.classList.remove("section-entering"));
+    });
+  }, 200);
 }
 
 function addToCart(id){
@@ -1626,16 +1658,45 @@ document.getElementById("customGrid").addEventListener("click", (e) => {
   if(btn){ orderCustomOption(btn.dataset.customOrder); }
 });
 
-document.getElementById("cartFab").addEventListener("click", () => {
-  document.getElementById("overlay").style.display = "block";
-  document.getElementById("cartPanel").style.display = "flex";
-});
+function openCartPanel(){
+  const panel = document.getElementById("cartPanel");
+  const overlay = document.getElementById("overlay");
+  panel.style.transition = "";
+  overlay.style.transition = "";
+  panel.classList.remove("closing");
+  overlay.classList.remove("closing");
+  overlay.style.display = "block";
+  panel.style.display = "flex";
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      panel.classList.add("open");
+      overlay.classList.add("open");
+    });
+  });
+}
+document.getElementById("cartFab").addEventListener("click", openCartPanel);
 document.getElementById("closeCart").addEventListener("click", closeCart);
 document.getElementById("overlay").addEventListener("click", closeCart);
 document.getElementById("clearCartBtn").addEventListener("click", clearCart);
 function closeCart(){
-  document.getElementById("overlay").style.display = "none";
-  document.getElementById("cartPanel").style.display = "none";
+  const panel = document.getElementById("cartPanel");
+  const overlay = document.getElementById("overlay");
+  panel.style.transition = "transform 0.25s ease-in";
+  overlay.style.transition = "opacity 0.25s ease-in";
+  panel.classList.remove("open");
+  overlay.classList.remove("open");
+  panel.classList.add("closing");
+  overlay.classList.add("closing");
+  setTimeout(() => {
+    if(panel.classList.contains("closing")){
+      panel.style.display = "none";
+      overlay.style.display = "none";
+      panel.classList.remove("closing");
+      overlay.classList.remove("closing");
+      panel.style.transition = "";
+      overlay.style.transition = "";
+    }
+  }, 250);
   if(pendingCartRestored){
     pendingCartRestored = false;
     renderCart();
