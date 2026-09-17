@@ -140,22 +140,36 @@
   /* ---------- WELCOME MESSAGE ---------- */
   .welcome-msg{
     margin:20px 28px 0 28px;
+    padding:18px 22px;
+    background:linear-gradient(135deg, rgba(244,185,66,0.08) 0%, rgba(244,185,66,0.02) 65%), var(--panel);
+    border:1px solid rgba(244,185,66,0.25);
+    border-top:3px solid var(--gold);
+    border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.25);
     font-family:'Inter',sans-serif;
     font-style:italic;
     font-weight:500;
-    font-size:14.5px;
-    line-height:1.5;
+    font-size:15.5px;
+    line-height:1.6;
     text-wrap:pretty;
     color:#EBDAB6;
     opacity:0;
-    animation:welcomeFadeIn 0.9s ease 0.15s forwards;
+    animation:welcomeFadeIn 0.9s var(--ease-out) 0.15s forwards;
+  }
+  .welcome-msg .heart-icon{
+    display:inline-block;
+    width:16px;
+    height:16px;
+    vertical-align:-2px;
+    margin-left:3px;
+    color:var(--gold);
   }
   @keyframes welcomeFadeIn{
-    from{opacity:0; transform:translateY(-6px);}
+    from{opacity:0; transform:translateY(-8px);}
     to{opacity:1; transform:translateY(0);}
   }
   @media (max-width:640px){
-    .welcome-msg{font-size:13.5px;}
+    .welcome-msg{font-size:14px; padding:14px 16px; margin:16px 20px 0 20px;}
   }
 
   main{
@@ -979,7 +993,7 @@
   </div>
 </header>
 
-<p class="welcome-msg">En Studios Colombia no eres solo un cliente más, eres familia. Te acompañamos en cada paso, con calidez y confianza, para que te sientas como en casa. 🧡</p>
+<p class="welcome-msg">En Studios Colombia no eres solo un cliente más, eres familia. Te acompañamos en cada paso, con calidez y confianza, para que te sientas como en casa.<svg class="heart-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></p>
 
 <main>
   <div class="cat-tabs main-nav-tabs">
