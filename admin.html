@@ -315,6 +315,10 @@
             <input type="number" id="pPrice" placeholder="15000">
           </div>
           <div class="field">
+            <label>Precio en dólares (USD, opcional)</label>
+            <input type="number" step="0.01" id="pPriceUsd" placeholder="Ej: 4.99">
+          </div>
+          <div class="field">
             <label>Categoría</label>
             <select id="pCategory"></select>
           </div>
@@ -369,6 +373,10 @@
           <div class="field">
             <label>Precio (número, ej: 25000)</label>
             <input type="number" id="coPrice" placeholder="25000">
+          </div>
+          <div class="field">
+            <label>Precio en dólares (USD, opcional)</label>
+            <input type="number" step="0.01" id="coPriceUsd" placeholder="Ej: 6.99">
           </div>
           <div class="field">
             <label>Imagen de portada (opcional)</label>
@@ -448,6 +456,13 @@ function formatPrice(n){
   return "$" + num.toLocaleString("es-CO");
 }
 
+function formatUsdPrice(n){
+  if(n === null || n === undefined || n === "") return "";
+  const num = Number(n);
+  if(Number.isNaN(num)) return "";
+  return "$" + num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " USD";
+}
+
 function truncate(str, n){
   return str.length > n ? str.slice(0, n - 1) + "…" : str;
 }
@@ -511,6 +526,7 @@ async function loadProducts(){
     id: p.id,
     name: p.name,
     price: p.price,
+    priceUsd: p.price_usd,
     image: p.image,
     videoUrl: p.video_url,
     categoryId: p.category_id
@@ -547,7 +563,7 @@ function renderAdminList(){
     <tr>
       <td><img src="${escapeHtml(p.image || '')}" alt=""></td>
       <td>${escapeHtml(p.name)}${p.videoUrl ? " 🎬" : ""}</td>
-      <td>${formatPrice(p.price)}</td>
+      <td>${formatPrice(p.price)}${p.priceUsd !== null && p.priceUsd !== undefined && p.priceUsd !== "" ? `<br><span class="hint">${formatUsdPrice(p.priceUsd)}</span>` : ""}</td>
       <td><select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select></td>
       <td class="actions-cell">
         <label class="video-upload-btn" title="Subir / reemplazar video">
@@ -595,7 +611,7 @@ function renderCustomOptionsList(){
             : `<div style="width:40px;height:40px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);">🖼️</div>`}
           <span class="co-title">${escapeHtml(o.title)}</span>
         </div>
-        <span class="co-price">${formatPrice(o.price)}</span>
+        <span class="co-price">${formatPrice(o.price)}${o.price_usd !== null && o.price_usd !== undefined && o.price_usd !== "" ? ` <span class="hint">(${formatUsdPrice(o.price_usd)})</span>` : ""}</span>
       </div>
       <div class="co-desc">${escapeHtml(truncate(o.description || "Sin descripción", 90))} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
       <div class="co-actions">
@@ -611,6 +627,7 @@ function resetCustomOptionForm(){
   document.getElementById("coTitle").value = "";
   document.getElementById("coDescription").value = "";
   document.getElementById("coPrice").value = "";
+  document.getElementById("coPriceUsd").value = "";
   document.getElementById("coImage").value = "";
   document.getElementById("coVideoUrl").value = "";
   document.getElementById("coAddBtn").textContent = "Agregar opción";
@@ -712,6 +729,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
   const msgEl = document.getElementById("addMsg");
   const name = document.getElementById("pName").value.trim();
   const price = document.getElementById("pPrice").value;
+  const priceUsd = document.getElementById("pPriceUsd").value;
   const file = document.getElementById("pImage").files[0];
   const videoFile = document.getElementById("pVideoFile").files[0];
 
@@ -746,6 +764,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
     const { data, error } = await sb.from("products").insert({
       name,
       price: Number(price),
+      price_usd: priceUsd ? Number(priceUsd) : null,
       image: imageData,
       video_url: videoUrl,
       category_id: categoryId
@@ -755,6 +774,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
       id: data.id,
       name: data.name,
       price: data.price,
+      priceUsd: data.price_usd,
       image: data.image,
       videoUrl: data.video_url,
       categoryId: data.category_id
@@ -764,6 +784,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
     msgEl.textContent = "¡Agregado al catálogo!";
     document.getElementById("pName").value = "";
     document.getElementById("pPrice").value = "";
+    document.getElementById("pPriceUsd").value = "";
     document.getElementById("pImage").value = "";
     document.getElementById("pVideoFile").value = "";
     document.getElementById("pCategory").value = "";
@@ -861,6 +882,7 @@ document.getElementById("coAddBtn").addEventListener("click", async () => {
   const title = document.getElementById("coTitle").value.trim();
   const description = document.getElementById("coDescription").value.trim();
   const price = document.getElementById("coPrice").value;
+  const priceUsd = document.getElementById("coPriceUsd").value;
   const videoUrl = document.getElementById("coVideoUrl").value.trim();
   const imageFile = document.getElementById("coImage").files[0];
 
@@ -875,6 +897,7 @@ document.getElementById("coAddBtn").addEventListener("click", async () => {
     title,
     description: description || null,
     price: Number(price),
+    price_usd: priceUsd ? Number(priceUsd) : null,
     video_url: videoUrl || null
   };
 
@@ -935,6 +958,7 @@ document.getElementById("customOptionsList").addEventListener("click", async (e)
     document.getElementById("coTitle").value = opt.title;
     document.getElementById("coDescription").value = opt.description || "";
     document.getElementById("coPrice").value = opt.price;
+    document.getElementById("coPriceUsd").value = opt.price_usd !== null && opt.price_usd !== undefined ? opt.price_usd : "";
     document.getElementById("coVideoUrl").value = opt.video_url || "";
     document.getElementById("coAddBtn").textContent = "Guardar cambios";
     document.getElementById("coMsg").style.display = "none";

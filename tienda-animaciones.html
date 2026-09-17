@@ -352,6 +352,14 @@
     letter-spacing:-0.2px;
     font-variant-numeric:tabular-nums;
   }
+  .price-usd{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:500;
+    margin-top:2px;
+  }
+  .price-wrap{display:flex;flex-direction:column;}
   .btn-add{
     background:var(--red);
     color:#14100E;
@@ -1169,6 +1177,13 @@ function formatPrice(n){
   return "$" + num.toLocaleString("es-CO");
 }
 
+function formatUsdPriceInline(n){
+  if(n === null || n === undefined || n === "") return "";
+  const num = Number(n);
+  if(Number.isNaN(num)) return "";
+  return `<div class="price-usd">(o $${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD)</div>`;
+}
+
 function escapeHtml(str){
   if(str === null || str === undefined) return "";
   return String(str)
@@ -1200,6 +1215,7 @@ async function loadProducts(){
     id: p.id,
     name: p.name,
     price: p.price,
+    priceUsd: p.price_usd,
     image: p.image,
     videoUrl: p.video_url,
     categoryId: p.category_id
@@ -1247,7 +1263,10 @@ function renderGrid(){
         <div class="card-body">
           <div class="card-name">${escapeHtml(p.name)}</div>
           <div class="card-bottom">
-            <div class="price">${formatPrice(p.price)}</div>
+            <div class="price-wrap">
+              <div class="price">${formatPrice(p.price)}</div>
+              ${formatUsdPriceInline(p.priceUsd)}
+            </div>
             <button class="btn-add" data-id="${p.id}">Agregar</button>
           </div>
         </div>
@@ -1385,6 +1404,7 @@ async function loadCustomOptions(){
     title: o.title,
     description: o.description,
     price: o.price,
+    priceUsd: o.price_usd,
     videoUrl: o.video_url,
     imageUrl: o.image_url
   }));
@@ -1409,7 +1429,10 @@ function renderCustomGrid(){
         <div class="card-body">
           <div class="card-name">${escapeHtml(opt.title)}</div>
           ${opt.description ? `<div class="custom-desc">${escapeHtml(opt.description)}</div>` : ""}
-          <div class="price">${formatPrice(opt.price)}</div>
+          <div class="price-wrap">
+            <div class="price">${formatPrice(opt.price)}</div>
+            ${formatUsdPriceInline(opt.priceUsd)}
+          </div>
           <div class="custom-card-actions">
             <button class="btn-add" data-custom-order="${opt.id}">Pedir por WhatsApp</button>
           </div>

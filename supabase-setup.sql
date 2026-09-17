@@ -268,6 +268,17 @@ create policy "personalizados_actualizacion_admin" on custom_options
 create policy "personalizados_borrado_admin" on custom_options
   for delete using (is_admin());
 
+-- ============================================================
+-- PRECIO EN DÓLARES (USD, manual — sin conversión automática)
+-- ============================================================
+-- Columna opcional para que el admin escriba a mano un precio en USD
+-- independiente del precio en pesos, tanto en el catálogo como en
+-- personalizados y precios. Si queda vacía (null), no se muestra nada
+-- adicional en la tienda; el precio en pesos sigue siendo el único que
+-- se usa para el carrito y el mensaje de WhatsApp.
+alter table products add column if not exists price_usd numeric;
+alter table custom_options add column if not exists price_usd numeric;
+
 -- ---------- Márcate a ti mismo como administrador ----------
 -- ⚠️ MUY IMPORTANTE: reemplaza el correo de abajo por el correo EXACTO con el
 -- que inicias sesión en "Modo administrador" en la tienda, y corre este bloque
