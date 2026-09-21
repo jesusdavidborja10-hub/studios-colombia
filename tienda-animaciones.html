@@ -14,12 +14,12 @@
     try{
       if(!sessionStorage.getItem("introSeen")){
         sessionStorage.setItem("introSeen", "1");
-        root.classList.add("intro-on");
+        root.classList.add("intro-on", "strip-hidden");
         // Red de seguridad: si algo falla, la tienda nunca queda bloqueada.
         setTimeout(function(){
           var el = document.getElementById("intro");
           if(el) el.remove();
-          root.classList.remove("intro-on", "intro-reveal");
+          root.classList.remove("intro-on", "intro-reveal", "strip-hidden", "strip-draw");
           document.dispatchEvent(new Event("intro:reveal"));
         }, 5000);
       }
@@ -1072,6 +1072,7 @@
     stroke-dashoffset:1;
     opacity:0.7;
   }
+  .intro-text{position:relative;}
   .intro-name{
     font-family:'Anton', Impact, 'Arial Narrow', sans-serif;
     font-size:clamp(22px, 5.4vmin, 34px);
@@ -1080,6 +1081,27 @@
     white-space:nowrap;
     opacity:0;
   }
+  /* Secundario: fuera del flujo para no mover el logo ni el nombre. */
+  .intro-welcome{
+    position:absolute;
+    left:0;
+    right:0;
+    top:100%;
+    margin-top:clamp(8px, 1.6vmin, 12px);
+    text-align:center;
+    font-family:'Inter', sans-serif;
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(13px, 2.4vmin, 17px);
+    letter-spacing:0.08em;
+    color:#EBDAB6;
+    white-space:nowrap;
+    opacity:0;
+  }
+  /* Franja tricolor que se "dibuja" de izquierda a derecha al retirarse la intro. */
+  header::after{clip-path:inset(0 0 0 0);}
+  html.strip-hidden header::after{clip-path:inset(0 100% 0 0);}
+  html.strip-draw header::after{transition:clip-path 0.65s cubic-bezier(0.45, 0, 0.2, 1) 0.04s;}
 
   /* ---------- REDUCED MOTION ---------- */
   @media (prefers-reduced-motion: reduce){
@@ -1104,7 +1126,10 @@
       <svg class="intro-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49.6" pathLength="1"></circle></svg>
       <img class="intro-logo" src="logo-studios-colombia-header.png" alt="">
     </div>
-    <div class="intro-name">STUDIOS COLOMBIA</div>
+    <div class="intro-text">
+      <div class="intro-name">STUDIOS COLOMBIA</div>
+      <div class="intro-welcome">Bienvenido</div>
+    </div>
   </div>
 </div>
 <script>
@@ -1122,6 +1147,7 @@
   const ring = intro.querySelector(".intro-ring circle");
   const logo = intro.querySelector(".intro-logo");
   const name = intro.querySelector(".intro-name");
+  const welcome = intro.querySelector(".intro-welcome");
   const glowLow = "0 0 0 2px rgba(244,185,66,0.15), 0 0 8px 0 rgba(244,185,66,0.2)";
   const glowPeak = "0 0 0 2px rgba(244,185,66,0.6), 0 0 44px 12px rgba(244,185,66,0.72)";
 
@@ -1134,6 +1160,12 @@
   function reveal(){
     if(root.classList.contains("intro-reveal")) return;
     root.classList.add("intro-reveal");
+    // La franja tricolor se dibuja al retirarse la intro; con skip o movimiento reducido aparece completa.
+    if(!reduce && !intro.dataset.skipping){
+      root.classList.add("strip-draw");
+      setTimeout(() => root.classList.remove("strip-draw"), 1000);
+    }
+    root.classList.remove("strip-hidden");
     document.dispatchEvent(new Event("intro:reveal"));
   }
   function finish(){
@@ -1142,7 +1174,7 @@
     timers.forEach(clearTimeout);
     document.removeEventListener("keydown", skip);
     reveal();
-    root.classList.remove("intro-on", "intro-reveal");
+    root.classList.remove("intro-on", "intro-reveal", "strip-hidden");
     intro.remove();
   }
   // Saltar: el contenido aparece de inmediato debajo y el overlay se desvanece rápido (sin corte brusco).
@@ -1171,6 +1203,7 @@
     fade(halo, 500);
     fade(ring, 300);
     fade(name, 280);
+    fade(welcome, 280);
     if(!to || !to.width){
       fade(bg, 400);
       fade(logo, 400).onfinish = onDone;
@@ -1179,7 +1212,7 @@
     const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
     const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
     const s = to.width / from.width;
-    fade(bg, 520, 120);
+    fade(bg, 520);
     const move = anim(logo, [
       {transform: "translate(0, 0) scale(1)"},
       {transform: `translate(${dx}px, ${dy}px) scale(${s})`}
@@ -1190,6 +1223,7 @@
   function playReduced(){
     anim(logo, {opacity: [0, 1]}, {duration: 400, easing: EASE_OUT});
     anim(name, {opacity: [0, 1]}, {duration: 400, delay: 150, easing: EASE_OUT});
+    anim(welcome, {opacity: [0, 1]}, {duration: 400, delay: 300, easing: EASE_OUT});
     anim(halo, {opacity: [0, 1]}, {duration: 600, easing: EASE_OUT});
     later(() => {
       reveal();
@@ -1216,6 +1250,13 @@
         {opacity: 1, transform: "translateY(0)", letterSpacing: "0.12em"}
       ], {duration: 650, easing: EASE_OUT});
     }, 280);
+    // "Bienvenido" entra poco después del nombre, con solapamiento.
+    later(() => {
+      anim(welcome, [
+        {opacity: 0, transform: "translateY(8px)", letterSpacing: "0.22em"},
+        {opacity: 0.9, transform: "translateY(0)", letterSpacing: "0.08em"}
+      ], {duration: 600, easing: EASE_OUT});
+    }, 520);
     later(fly, 1050);
   }
 
