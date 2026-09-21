@@ -5,6 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STUDIOS COLOMBIA</title>
 <link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
+<link rel="preload" as="image" href="logo-studios-colombia-header.png">
+<script>
+  // Intro de entrada: solo la primera vez por visita (sessionStorage). Se decide aquí, antes del primer pintado,
+  // para que el overlay ya esté cubriendo la página y no haya destello del contenido.
+  (function(){
+    var root = document.documentElement;
+    try{
+      if(!sessionStorage.getItem("introSeen")){
+        sessionStorage.setItem("introSeen", "1");
+        root.classList.add("intro-on");
+        // Red de seguridad: si algo falla, la tienda nunca queda bloqueada.
+        setTimeout(function(){
+          var el = document.getElementById("intro");
+          if(el) el.remove();
+          root.classList.remove("intro-on", "intro-reveal");
+          document.dispatchEvent(new Event("intro:reveal"));
+        }, 5000);
+      }
+    }catch(e){}
+  })();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -975,6 +996,91 @@
   }
   .order-card .order-total{color:var(--gold);font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;}
 
+  /* ---------- INTRO ---------- */
+  #intro{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    overflow:hidden;
+    --intro-size:clamp(120px, 34vmin, 168px);
+  }
+  html.intro-on{overflow:hidden;}
+  html.intro-on #intro{display:flex;}
+  html.intro-on .logo-mark{opacity:0; animation:none;}
+  html.intro-on #storeNameDisplay{opacity:0; transition:opacity 0.4s ease-out;}
+  html.intro-on.intro-reveal #storeNameDisplay{opacity:1; transition-delay:0.25s;}
+  html.intro-on:not(.intro-reveal) .welcome-msg{animation-play-state:paused;}
+  .intro-bg{
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(244,185,66,0.06), transparent 40%),
+      radial-gradient(circle at 100% 15%, rgba(47,95,222,0.05), transparent 45%),
+      var(--bg);
+  }
+  .intro-halo{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:min(140vmin, 900px);
+    height:min(140vmin, 900px);
+    margin:calc(min(140vmin, 900px) / -2) 0 0 calc(min(140vmin, 900px) / -2);
+    background:radial-gradient(circle, rgba(244,185,66,0.20) 0%, rgba(244,185,66,0.07) 30%, transparent 62%);
+    opacity:0;
+    pointer-events:none;
+  }
+  .intro-stage{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:calc(var(--intro-size) * 0.3);
+  }
+  .intro-mark{
+    position:relative;
+    width:var(--intro-size);
+    height:var(--intro-size);
+  }
+  .intro-logo{
+    display:block;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:contain;
+    opacity:0;
+    will-change:transform, opacity;
+  }
+  .intro-ring{
+    position:absolute;
+    inset:-16px;
+    width:calc(100% + 32px);
+    height:calc(100% + 32px);
+    transform:rotate(-90deg);
+    overflow:visible;
+    pointer-events:none;
+  }
+  .intro-ring circle{
+    fill:none;
+    stroke:var(--gold);
+    stroke-width:0.7;
+    stroke-linecap:round;
+    stroke-dasharray:1;
+    stroke-dashoffset:1;
+    opacity:0.7;
+  }
+  .intro-name{
+    font-family:'Anton', Impact, 'Arial Narrow', sans-serif;
+    font-size:clamp(22px, 5.4vmin, 34px);
+    letter-spacing:0.12em;
+    color:var(--gold);
+    white-space:nowrap;
+    opacity:0;
+  }
+
   /* ---------- REDUCED MOTION ---------- */
   @media (prefers-reduced-motion: reduce){
     .logo-mark, header::after, #cartFab.bump, .msg{animation:none;}
@@ -989,6 +1095,137 @@
 </style>
 </head>
 <body>
+
+<div id="intro" aria-hidden="true">
+  <div class="intro-bg"></div>
+  <div class="intro-halo"></div>
+  <div class="intro-stage">
+    <div class="intro-mark">
+      <svg class="intro-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49.6" pathLength="1"></circle></svg>
+      <img class="intro-logo" src="logo-studios-colombia-header.png" alt="">
+    </div>
+    <div class="intro-name">STUDIOS COLOMBIA</div>
+  </div>
+</div>
+<script>
+(function(){
+  const root = document.documentElement;
+  const intro = document.getElementById("intro");
+  if(!intro) return;
+  if(!root.classList.contains("intro-on")){ intro.remove(); return; }
+
+  const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+  const EASE_IN_OUT = "cubic-bezier(0.77, 0, 0.175, 1)";
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const bg = intro.querySelector(".intro-bg");
+  const halo = intro.querySelector(".intro-halo");
+  const ring = intro.querySelector(".intro-ring circle");
+  const logo = intro.querySelector(".intro-logo");
+  const name = intro.querySelector(".intro-name");
+  const glowLow = "0 0 0 2px rgba(244,185,66,0.15), 0 0 8px 0 rgba(244,185,66,0.2)";
+  const glowPeak = "0 0 0 2px rgba(244,185,66,0.6), 0 0 44px 12px rgba(244,185,66,0.72)";
+
+  let ended = false;
+  const timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(() => { if(!ended) fn(); }, ms));
+  const anim = (el, keyframes, options) => el.animate(keyframes, Object.assign({fill: "both"}, options));
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  function reveal(){
+    if(root.classList.contains("intro-reveal")) return;
+    root.classList.add("intro-reveal");
+    document.dispatchEvent(new Event("intro:reveal"));
+  }
+  function finish(){
+    if(ended) return;
+    ended = true;
+    timers.forEach(clearTimeout);
+    document.removeEventListener("keydown", skip);
+    reveal();
+    root.classList.remove("intro-on", "intro-reveal");
+    intro.remove();
+  }
+  // Saltar: el contenido aparece de inmediato debajo y el overlay se desvanece rápido (sin corte brusco).
+  function skip(){
+    if(ended || intro.dataset.skipping) return;
+    intro.dataset.skipping = "1";
+    timers.forEach(clearTimeout);
+    reveal();
+    root.classList.remove("intro-on");
+    intro.style.pointerEvents = "none";
+    const out = intro.animate({opacity: [1, 0]}, {duration: 200, easing: "ease-out", fill: "forwards"});
+    out.onfinish = finish;
+  }
+  intro.addEventListener("pointerdown", skip);
+  document.addEventListener("keydown", skip);
+
+  // Si el cliente saltó, el fundido rápido de skip() es quien cierra.
+  const onDone = () => { if(!intro.dataset.skipping) finish(); };
+
+  function fly(){
+    reveal();
+    const target = document.querySelector("header .logo-mark");
+    const from = logo.getBoundingClientRect();
+    const to = target ? target.getBoundingClientRect() : null;
+    const fade = (el, duration, delay) => anim(el, {opacity: 0}, {duration, delay: delay || 0, easing: EASE_OUT});
+    fade(halo, 500);
+    fade(ring, 300);
+    fade(name, 280);
+    if(!to || !to.width){
+      fade(bg, 400);
+      fade(logo, 400).onfinish = onDone;
+      return;
+    }
+    const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+    const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+    const s = to.width / from.width;
+    fade(bg, 520, 120);
+    const move = anim(logo, [
+      {transform: "translate(0, 0) scale(1)"},
+      {transform: `translate(${dx}px, ${dy}px) scale(${s})`}
+    ], {duration: 650, easing: EASE_IN_OUT});
+    move.onfinish = onDone;
+  }
+
+  function playReduced(){
+    anim(logo, {opacity: [0, 1]}, {duration: 400, easing: EASE_OUT});
+    anim(name, {opacity: [0, 1]}, {duration: 400, delay: 150, easing: EASE_OUT});
+    anim(halo, {opacity: [0, 1]}, {duration: 600, easing: EASE_OUT});
+    later(() => {
+      reveal();
+      anim(intro, {opacity: [1, 0]}, {duration: 350, easing: "ease-out"}).onfinish = onDone;
+    }, 1000);
+  }
+
+  function play(){
+    if(reduce) return playReduced();
+    anim(logo, [
+      {opacity: 0, transform: "scale(0.78)"},
+      {opacity: 1, transform: "scale(1)"}
+    ], {duration: 720, easing: EASE_OUT});
+    anim(logo, [{boxShadow: glowLow}, {boxShadow: glowPeak}], {duration: 1100, easing: "cubic-bezier(0.45, 0, 0.2, 1)"});
+    anim(halo, [
+      {opacity: 0, transform: "scale(0.7)"},
+      {opacity: 1, transform: "scale(1)"}
+    ], {duration: 1100, easing: EASE_OUT});
+    anim(ring, {strokeDashoffset: [1, 0]}, {duration: 900, delay: 120, easing: EASE_OUT});
+    // El nombre entra con solapamiento (stagger), sin esperar a que el logo termine.
+    later(() => {
+      anim(name, [
+        {opacity: 0, transform: "translateY(12px)", letterSpacing: "0.34em"},
+        {opacity: 1, transform: "translateY(0)", letterSpacing: "0.12em"}
+      ], {duration: 650, easing: EASE_OUT});
+    }, 280);
+    later(fly, 1050);
+  }
+
+  // Esperar (con tope) a que el logo esté decodificado para que no aparezca "a saltos".
+  Promise.race([
+    logo.decode ? logo.decode().catch(() => {}) : Promise.resolve(),
+    wait(800)
+  ]).then(() => { if(!ended && !intro.dataset.skipping) play(); });
+})();
+</script>
 
 <header>
   <div class="logo"><img src="logo-studios-colombia-header.png" alt="Studios Colombia" class="logo-mark"><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
@@ -1376,6 +1613,12 @@ function wireVideoPreviews(containerSelector, list){
 }
 
 function revealCards(){
+  // Mientras la intro cubre la pantalla, las cartas esperan para animarse a la vista cuando ésta se retira.
+  const rootCls = document.documentElement.classList;
+  if(rootCls.contains("intro-on") && !rootCls.contains("intro-reveal")){
+    document.addEventListener("intro:reveal", revealCards, {once:true});
+    return;
+  }
   const cards = document.querySelectorAll(".card-wrap:not(.in-view)");
   if(!("IntersectionObserver" in window)){
     cards.forEach(el => el.classList.add("in-view"));
@@ -1990,7 +2233,7 @@ function hideCustomPromoModal(){
 setTimeout(() => {
   if(sessionStorage.getItem("customPromoShown")) return;
   const onCustomSection = document.getElementById("customSection").style.display !== "none";
-  if(onCustomSection || isAnyModalOpen()) return;
+  if(onCustomSection || isAnyModalOpen() || document.documentElement.classList.contains("intro-on")) return;
   sessionStorage.setItem("customPromoShown", "1");
   showCustomPromoModal();
 }, 10000);
