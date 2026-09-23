@@ -60,6 +60,7 @@
     --blue:#2F5FDE;
     --red:#E8433D;
     --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-drawer:cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -517,29 +518,46 @@
   #cartPanel{
     position:fixed;
     top:0; right:0;
-    width:360px;
+    width:380px;
     max-width:92vw;
     height:100%;
     background:var(--panel);
     border-left:1px solid var(--border);
-    box-shadow:-16px 0 48px rgba(0,0,0,0.4);
+    box-shadow:-24px 0 60px rgba(0,0,0,0.45);
     z-index:41;
     display:none;
     flex-direction:column;
-    padding:22px;
+    padding:22px 22px 20px;
     transform:translateX(100%);
-    transition:transform 0.3s var(--ease-out);
+    transition:transform 0.32s var(--ease-drawer);
   }
   #cartPanel.open{transform:translateX(0);}
-  #cartPanel h3{
+  .cart-panel-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .cart-panel-header h3{
     font-family:'Anton',sans-serif;
     font-weight:400;
     font-size:22px;
     letter-spacing:-0.3px;
-    margin:0 0 16px 0;
+    margin:0;
+  }
+  .cart-count-tag{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    margin-left:8px;
+    vertical-align:middle;
+    font-variant-numeric:tabular-nums;
   }
   .btn-clear-cart{
     align-self:flex-start;
+    display:inline-flex;
     align-items:center;
     gap:6px;
     background:none;
@@ -548,58 +566,165 @@
     font-size:12px;
     font-weight:600;
     padding:7px 12px;
+    border-radius:7px;
     cursor:pointer;
-    margin-bottom:14px;
+    margin-bottom:16px;
     transition:border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
   }
   .btn-clear-cart:active{transform:scale(0.96);}
   @media (hover:hover) and (pointer:fine){
     .btn-clear-cart:hover{border-color:var(--red); color:var(--red);}
   }
+  .cart-items-scroll{
+    flex:1;
+    min-height:0;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .cart-items-scroll::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:22px;
+    background:linear-gradient(to bottom, transparent, var(--panel));
+    pointer-events:none;
+  }
   #cartItems{
     flex:1;
+    min-height:0;
     overflow-y:auto;
     display:flex;
     flex-direction:column;
-    gap:12px;
+    gap:0;
   }
+  #cartEmpty{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:10px;
+    color:var(--muted);
+    padding:20px;
+  }
+  #cartEmpty svg{opacity:0.45;}
+  #cartEmpty p{margin:0; font-size:13px; line-height:1.55;}
+  #cartEmpty p .sub{display:block; font-size:12px; margin-top:3px; opacity:0.8;}
   .cart-row{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
+    margin-bottom:14px;
+    padding-bottom:14px;
     border-bottom:1px solid var(--border);
-    padding-bottom:12px;
+    overflow:hidden;
+    opacity:1;
+    transform:translateY(0) scale(1);
+    transition:opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out),
+      max-height 0.26s var(--ease-out), margin-bottom 0.26s var(--ease-out),
+      padding-bottom 0.26s var(--ease-out), border-color 0.26s var(--ease-out);
   }
-  .cart-row img{width:52px;height:52px;object-fit:cover;flex-shrink:0;}
-  .cart-row .info{flex:1;min-width:0;}
-  .cart-row .info .n{font-size:13px;font-weight:600;}
-  .cart-row .info .p{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
-  .qty-ctrl{display:flex;align-items:center;gap:6px;}
-  .qty-ctrl button{
+  .cart-row:last-child{margin-bottom:0; padding-bottom:0; border-bottom:none;}
+  .cart-row-entering{opacity:0; transform:translateY(-6px) scale(0.98);}
+  .cart-row-leaving{
+    opacity:0;
+    transform:translateX(10px) scale(0.97);
+    max-height:0 !important;
+    margin-bottom:0 !important;
+    padding-bottom:0 !important;
+    border-color:transparent;
+  }
+  .cart-row img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);background:var(--panel2);overflow:hidden;}
+  .cart-row .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+  .cart-row .info-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .cart-row .info .n{font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cart-row .info .line-total{font-size:13px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;flex-shrink:0;}
+  .cart-row .info-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .cart-row .info .p{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .qty-ctrl{
+    display:flex;
+    align-items:stretch;
     background:var(--panel2);
     border:1px solid var(--border);
+    border-radius:999px;
+    overflow:hidden;
+    flex-shrink:0;
+    transition:border-color 0.2s ease;
+  }
+  .qty-ctrl button{
+    background:none;
+    border:none;
     color:var(--text);
-    width:36px;height:36px;
+    width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;
     cursor:pointer;
-    font-size:16px;
-    transition:transform 0.1s ease, border-color 0.15s ease;
+    font-size:15px;
+    font-weight:700;
+    line-height:1;
+    transition:transform 0.1s ease, background-color 0.15s ease, color 0.15s ease;
   }
-  .qty-ctrl button:active{transform:scale(0.9);}
+  .qty-ctrl button:active{transform:scale(0.86);}
   @media (hover:hover) and (pointer:fine){
-    .qty-ctrl button:hover{border-color:var(--gold);}
+    .qty-ctrl button:hover{background:rgba(244,185,66,0.14); color:var(--gold);}
+    .qty-ctrl:has(button:hover){border-color:var(--gold);}
   }
-  #cartTotal{
-    margin-top:16px;
-    padding-top:16px;
-    border-top:1px solid var(--border);
-    display:flex;
-    justify-content:space-between;
-    font-family:'Anton',sans-serif;
-    font-size:20px;
-    letter-spacing:-0.2px;
+  .qty-value{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:22px;
+    font-size:13px;
+    font-weight:700;
     font-variant-numeric:tabular-nums;
   }
-  #cartTotal span:last-child{color:var(--gold);}
+  @keyframes qtyBump{
+    0%{transform:scale(1); color:var(--text);}
+    35%{transform:scale(1.32); color:var(--gold);}
+    100%{transform:scale(1); color:var(--text);}
+  }
+  .qty-value.qty-bump{animation:qtyBump 0.38s var(--ease-out);}
+  .cart-fade{opacity:0; transition:opacity 0.2s ease;}
+  .cart-fade.cart-fade-visible{opacity:1;}
+  #cartTotal{
+    position:relative;
+    margin-top:18px;
+    padding-top:18px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  #cartTotal::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold) 40%, var(--gold) 60%, transparent);
+    opacity:0.6;
+  }
+  #cartTotal .total-label{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  #cartTotalValue{
+    font-family:'Anton',sans-serif;
+    font-size:30px;
+    letter-spacing:-0.3px;
+    color:var(--gold);
+    font-variant-numeric:tabular-nums;
+    text-shadow:0 0 18px rgba(244,185,66,0.25);
+  }
+  @keyframes totalBump{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.08);}
+    100%{transform:scale(1);}
+  }
+  #cartTotalValue.total-bump{animation:totalBump 0.42s var(--ease-out);}
   #sendWhatsapp{
     width:100%;
     background:#25D366;
@@ -609,11 +734,16 @@
     font-weight:800;
     font-size:14px;
     cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
     position:relative;
     overflow:hidden;
     box-shadow:0 4px 18px rgba(37,211,102,0.3);
     transition:box-shadow 0.2s ease, transform 0.1s ease;
   }
+  #sendWhatsapp svg{fill:currentColor; flex-shrink:0;}
   #sendWhatsapp::after{
     content:"";
     position:absolute;
@@ -632,8 +762,8 @@
 
   /* ---------- PAYMENT BLOCKS ---------- */
   #paymentBlocks{
-    margin-top:16px;
-    padding-top:16px;
+    margin-top:18px;
+    padding-top:18px;
     border-top:1px solid var(--border);
     display:flex;
     flex-direction:column;
@@ -643,15 +773,23 @@
     background:var(--panel2);
     border:1px solid var(--border);
     border-top:3px solid var(--gold);
-    padding:14px;
+    border-radius:10px;
+    padding:15px;
   }
   .pay-block-header{
     display:flex;
     align-items:flex-start;
-    gap:10px;
+    gap:11px;
     margin-bottom:12px;
   }
-  .pay-block-header .pay-icon{color:var(--gold); flex-shrink:0; margin-top:1px;}
+  .pay-icon-badge{
+    width:32px;height:32px;
+    border-radius:50%;
+    background:rgba(244,185,66,0.14);
+    color:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
   .pay-title{
     font-weight:800;
     font-size:14px;
@@ -664,14 +802,19 @@
     line-height:1.4;
   }
   #closeCart{
-    align-self:flex-end;
     background:none;border:none;color:var(--muted);
-    font-size:22px;cursor:pointer;margin-bottom:6px;
-    width:44px;height:44px;
+    cursor:pointer;
+    width:40px;height:40px;
+    margin:-8px -8px 0 0;
+    border-radius:8px;
+    flex-shrink:0;
     display:flex;align-items:center;justify-content:center;
-    transition:transform 0.1s ease, color 0.15s ease;
+    transition:transform 0.1s ease, color 0.15s ease, background-color 0.15s ease;
   }
   #closeCart:active{transform:scale(0.88);}
+  @media (hover:hover) and (pointer:fine){
+    #closeCart:hover{color:var(--text); background:var(--panel2);}
+  }
 
   /* ---------- FOOTER ---------- */
   footer{
@@ -727,22 +870,37 @@
     letter-spacing:-0.3px;
     margin:0 0 18px 0;
   }
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  /* accountModal gets a slightly deeper focus treatment than the shared modal base */
+  #accountModal.open{backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);}
+  #accountModal .modal-box{
+    padding:32px 28px 28px;
+    border-radius:16px;
+    box-shadow:0 24px 60px -16px rgba(0,0,0,0.6);
+  }
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    color:var(--muted);
+    margin-bottom:7px;
+  }
   .field input[type=text], .field input[type=number], .field input[type=password], .field input[type=url], .field select{
     width:100%;
     background:var(--panel2);
     border:1px solid var(--border);
     color:var(--text);
-    padding:11px 14px;
+    padding:12px 14px;
     font-size:16px;
     font-family:'Inter',sans-serif;
-    border-radius:8px;
-    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+    border-radius:10px;
+    transition:border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s var(--ease-out);
   }
   .field input[type=text]:focus, .field input[type=number]:focus, .field input[type=password]:focus, .field input[type=url]:focus, .field select:focus{
     outline:none;
     border-color:var(--gold);
+    background:var(--panel);
     box-shadow:0 0 0 3px rgba(244,185,66,0.18);
   }
   .field input[type=file]{
@@ -781,8 +939,14 @@
     border-radius:50%;
     animation:btnSpin 0.7s linear infinite;
     flex-shrink:0;
+    opacity:1;
+    transform:scale(1);
+    transition:opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
   }
-  .btn-primary.loading .btn-spinner{display:inline-block;}
+  .btn-primary.loading .btn-spinner{
+    display:inline-block;
+    @starting-style{opacity:0; transform:scale(0.5);}
+  }
   @keyframes btnSpin{to{transform:rotate(360deg);}}
   .btn-secondary{
     background:none;
@@ -805,8 +969,15 @@
     padding:10px 12px 10px 34px;
     border-radius:8px;
     position:relative;
-    animation:msgIn 0.25s ease;
+    animation:msgIn 0.25s var(--ease-out);
   }
+  @keyframes msgShake{
+    10%,90%{transform:translateX(-1px);}
+    20%,80%{transform:translateX(2px);}
+    30%,50%,70%{transform:translateX(-4px);}
+    40%,60%{transform:translateX(4px);}
+  }
+  .msg.msg-shake{animation:msgIn 0.25s var(--ease-out), msgShake 0.4s ease-out;}
   .msg::before{
     position:absolute;
     left:12px; top:10px;
@@ -834,7 +1005,7 @@
   /* ---------- CUSTOMER ACCOUNT ---------- */
   .auth-header{
     text-align:center;
-    margin-bottom:18px;
+    margin-bottom:22px;
   }
   .auth-logo{
     height:56px;
@@ -842,8 +1013,15 @@
     border-radius:50%;
     object-fit:contain;
     box-shadow:0 0 0 2px rgba(244,185,66,0.3), 0 0 14px 2px rgba(244,185,66,0.4);
-    margin-bottom:10px;
+    margin-bottom:12px;
   }
+  /* One authored moment for the login modal: the mark wakes up, glow settling in last. */
+  @keyframes authLogoEnter{
+    0%{opacity:0; transform:scale(0.72); box-shadow:0 0 0 2px rgba(244,185,66,0.1), 0 0 0 0 rgba(244,185,66,0);}
+    55%{opacity:1; transform:scale(1.06);}
+    100%{opacity:1; transform:scale(1); box-shadow:0 0 0 2px rgba(244,185,66,0.3), 0 0 14px 2px rgba(244,185,66,0.4);}
+  }
+  .auth-logo-enter{animation:authLogoEnter 0.42s var(--ease-out) 60ms both;}
   .auth-tabs{
     display:flex;
     position:relative;
@@ -897,9 +1075,9 @@
     display:flex;
     color:var(--muted);
     pointer-events:none;
-    transition:color 0.2s ease;
+    transition:color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   }
-  .input-icon-wrap:focus-within .input-icon{color:var(--gold);}
+  .input-icon-wrap:focus-within .input-icon{color:var(--gold); transform:scale(1.08);}
   .input-toggle-visibility{
     position:absolute;
     right:8px;
@@ -1199,6 +1377,11 @@
     .modal-overlay.open .modal-box{transform:none;}
     #cartPanel{transition:opacity 0.2s ease; transform:none;}
     .auth-tab-indicator{transition:none;}
+    .cart-row{transition:opacity 0.2s ease; transform:none !important;}
+    .cart-row-entering, .cart-row-leaving{transform:none;}
+    .qty-value.qty-bump, #cartTotalValue.total-bump{animation:none;}
+    .msg.msg-shake{animation:none;}
+    .auth-logo-enter{animation:none;}
   }
 </style>
 </head>
@@ -1405,21 +1588,28 @@
 
 <div id="overlay"></div>
 <div id="cartPanel">
-  <button id="closeCart">✕</button>
-  <h3>Tu pedido</h3>
+  <div class="cart-panel-header">
+    <h3>Tu pedido<span class="cart-count-tag" id="cartItemCount"></span></h3>
+    <button id="closeCart" aria-label="Cerrar carrito"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
   <button id="clearCartBtn" class="btn-clear-cart" style="display:none;">
     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
     Vaciar carrito
   </button>
-  <div id="pendingCartNotice" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>Recuperamos tu pedido pendiente guardado.</div>
-  <div id="cartItems"></div>
-  <div id="cartEmpty" style="color:var(--muted);font-size:13px;">Aún no has agregado nada.</div>
-  <div id="cartTotal" style="display:none;"><span>Total</span><span id="cartTotalValue">$0</span></div>
+  <div id="pendingCartNotice" class="cart-fade" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>Recuperamos tu pedido pendiente guardado.</div>
+  <div class="cart-items-scroll">
+    <div id="cartItems"></div>
+    <div id="cartEmpty" class="cart-fade" style="display:none;">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+      <p>Aún no has agregado nada.<span class="sub">Elige animaciones del catálogo para armar tu pedido.</span></p>
+    </div>
+  </div>
+  <div id="cartTotal" class="cart-fade" style="display:none;"><span class="total-label">Total</span><span id="cartTotalValue">$0</span></div>
 
-  <div id="paymentBlocks" style="display:none;">
+  <div id="paymentBlocks" class="cart-fade" style="display:none;">
     <div class="pay-block">
       <div class="pay-block-header">
-        <svg class="pay-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span class="pay-icon-badge"><svg class="pay-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
         <div>
           <div class="pay-title">Confirma tu pedido por WhatsApp</div>
           <div class="pay-sub">Te contestamos al momento para coordinar el pago (Nequi, transferencia, tarjeta, etc.).</div>
@@ -1429,7 +1619,7 @@
         <input type="text" id="quickName" placeholder="Tu nombre">
         <input type="text" id="quickWhats" placeholder="Tu WhatsApp (con código de país)">
       </div>
-      <button id="sendWhatsapp">Enviar pedido por WhatsApp</button>
+      <button id="sendWhatsapp"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.484-1.77-1.66-2.07-.174-.3-.019-.465.13-.615.136-.135.301-.345.451-.52.146-.181.194-.301.297-.497.1-.21.05-.375-.025-.524-.075-.15-.672-1.62-.922-2.206-.24-.584-.487-.51-.672-.51-.172-.015-.371-.015-.571-.015-.2 0-.523.074-.797.359-.273.3-1.045 1.02-1.045 2.475s1.07 2.865 1.219 3.075c.149.195 2.105 3.195 5.1 4.485.714.3 1.27.48 1.704.629.714.227 1.365.195 1.88.121.574-.091 1.767-.721 2.016-1.426.255-.705.255-1.29.18-1.425-.074-.135-.27-.21-.57-.345m-5.446 7.443h-.016a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg><span>Enviar pedido por WhatsApp</span></button>
     </div>
   </div>
 </div>
@@ -1532,6 +1722,8 @@ let products = [];
 let categories = []; // {id, name}
 let activeCategory = null; // null = "Todas"
 let cart = []; // {id, qty}
+let cartRowEls = new Map(); // id -> {el, qtyEl, lineTotalEl, qty}
+let prevCartTotalValue = null;
 let customOptions = [];
 
 // ---------- Customer accounts state ----------
@@ -1899,11 +2091,39 @@ function cartTotal(){
   }, 0);
 }
 
+// Crossfades a section of the cart footer (empty state, total, payment block, notice)
+// instead of snapping it in/out, so the panel never feels like it's flickering.
+function setCartFade(el, show, display){
+  if(show){
+    if(el.style.display !== display){
+      el.style.display = display;
+      void el.offsetWidth;
+    }
+    el.classList.add("cart-fade-visible");
+  }else{
+    el.classList.remove("cart-fade-visible");
+    setTimeout(() => {
+      if(!el.classList.contains("cart-fade-visible")) el.style.display = "none";
+    }, 200);
+  }
+}
+
+// Measures the row's current height so the collapse animates from a real value
+// instead of guessing, then removes it once the transition finishes.
+function collapseCartRow(row){
+  row.el.style.maxHeight = row.el.getBoundingClientRect().height + "px";
+  void row.el.offsetWidth;
+  row.el.classList.add("cart-row-leaving");
+  row.el.addEventListener("transitionend", () => row.el.remove(), { once:true });
+}
+
 function renderCart(){
   const count = cart.reduce((s,c)=>s+c.qty,0);
   document.getElementById("cartCount").textContent = count;
+  document.getElementById("cartItemCount").textContent = count > 0
+    ? `· ${count} ${count === 1 ? "animación" : "animaciones"}`
+    : "";
 
-  const itemsEl = document.getElementById("cartItems");
   const emptyEl = document.getElementById("cartEmpty");
   const totalEl = document.getElementById("cartTotal");
   const paymentBlocks = document.getElementById("paymentBlocks");
@@ -1911,41 +2131,88 @@ function renderCart(){
   const clearBtn = document.getElementById("clearCartBtn");
 
   if(cart.length === 0){
-    itemsEl.innerHTML = "";
-    emptyEl.style.display = "block";
-    totalEl.style.display = "none";
-    paymentBlocks.style.display = "none";
-    noticeEl.style.display = "none";
+    cartRowEls.forEach(row => collapseCartRow(row));
+    cartRowEls.clear();
+    setCartFade(emptyEl, true, "flex");
+    setCartFade(totalEl, false, "flex");
+    setCartFade(paymentBlocks, false, "flex");
+    setCartFade(noticeEl, false, "flex");
     clearBtn.style.display = "none";
+    prevCartTotalValue = null;
     return;
   }
 
-  emptyEl.style.display = "none";
-  totalEl.style.display = "flex";
-  paymentBlocks.style.display = "flex";
-  noticeEl.style.display = pendingCartRestored ? "flex" : "none";
+  const itemsEl = document.getElementById("cartItems");
+  setCartFade(emptyEl, false, "flex");
+  setCartFade(totalEl, true, "flex");
+  setCartFade(paymentBlocks, true, "flex");
+  setCartFade(noticeEl, pendingCartRestored, "flex");
   clearBtn.style.display = "inline-flex";
 
-  itemsEl.innerHTML = cart.map(c => {
+  const currentIds = new Set(cart.map(c => c.id));
+  cartRowEls.forEach((row, id) => {
+    if(!currentIds.has(id)){
+      collapseCartRow(row);
+      cartRowEls.delete(id);
+    }
+  });
+
+  let prevEl = null;
+  cart.forEach(c => {
     const p = products.find(pr => pr.id === c.id);
-    if(!p) return "";
-    return `
-      <div class="cart-row">
+    if(!p) return;
+    const lineTotal = formatPrice(Number(p.price) * c.qty);
+    let row = cartRowEls.get(c.id);
+    if(!row){
+      const el = document.createElement("div");
+      el.className = "cart-row cart-row-entering";
+      el.dataset.id = c.id;
+      el.innerHTML = `
         <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}">
         <div class="info">
-          <div class="n">${escapeHtml(p.name)}</div>
-          <div class="p">${formatPrice(p.price)} c/u</div>
+          <div class="info-top">
+            <div class="n">${escapeHtml(p.name)}</div>
+            <div class="line-total">${lineTotal}</div>
+          </div>
+          <div class="info-bottom">
+            <div class="p">${formatPrice(p.price)} c/u</div>
+            <div class="qty-ctrl">
+              <button data-act="dec" data-id="${p.id}" aria-label="Quitar una unidad">−</button>
+              <span class="qty-value">${c.qty}</span>
+              <button data-act="inc" data-id="${p.id}" aria-label="Agregar una unidad">+</button>
+            </div>
+          </div>
         </div>
-        <div class="qty-ctrl">
-          <button data-act="dec" data-id="${p.id}">−</button>
-          <span>${c.qty}</span>
-          <button data-act="inc" data-id="${p.id}">+</button>
-        </div>
-      </div>
-    `;
-  }).join("");
+      `;
+      row = { el, qtyEl: el.querySelector(".qty-value"), lineTotalEl: el.querySelector(".line-total"), qty: c.qty };
+      cartRowEls.set(c.id, row);
+      if(prevEl) prevEl.after(el); else itemsEl.prepend(el);
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove("cart-row-entering")));
+    }else{
+      if(prevEl ? prevEl.nextElementSibling !== row.el : itemsEl.firstElementChild !== row.el){
+        if(prevEl) prevEl.after(row.el); else itemsEl.prepend(row.el);
+      }
+      row.lineTotalEl.textContent = lineTotal;
+      if(row.qty !== c.qty){
+        row.qtyEl.textContent = c.qty;
+        row.qtyEl.classList.remove("qty-bump");
+        void row.qtyEl.offsetWidth;
+        row.qtyEl.classList.add("qty-bump");
+        row.qty = c.qty;
+      }
+    }
+    prevEl = row.el;
+  });
 
-  document.getElementById("cartTotalValue").textContent = formatPrice(cartTotal());
+  const totalValue = cartTotal();
+  const totalValueEl = document.getElementById("cartTotalValue");
+  totalValueEl.textContent = formatPrice(totalValue);
+  if(prevCartTotalValue !== null && prevCartTotalValue !== totalValue){
+    totalValueEl.classList.remove("total-bump");
+    void totalValueEl.offsetWidth;
+    totalValueEl.classList.add("total-bump");
+  }
+  prevCartTotalValue = totalValue;
 }
 
 async function sendOrderWhatsapp(){
@@ -2210,6 +2477,13 @@ function showAccountModal(){
   const modal = document.getElementById("accountModal");
   modal.style.display = "flex";
   modal.classList.remove("closing");
+  // Craft detail: the mark wakes up (only for the login/signup view, not the logged-in view).
+  if(document.getElementById("accountLoggedOut").style.display !== "none"){
+    const logo = modal.querySelector(".auth-logo");
+    logo.classList.remove("auth-logo-enter");
+    void logo.offsetWidth;
+    logo.classList.add("auth-logo-enter");
+  }
   requestAnimationFrame(() => modal.classList.add("open"));
 }
 function hideAccountModal(){
@@ -2227,14 +2501,54 @@ function hideAccountModal(){
 const EYE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
 const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
 
-function updateAuthModeUI(){
+// Crossfades a short text swap (used when toggling login/signup) instead of snapping it.
+function crossfadeText(el, newText){
+  if(el.textContent === newText) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce){ el.textContent = newText; return; }
+  const out = el.animate(
+    [{ opacity:1, transform:"translateY(0)" }, { opacity:0, transform:"translateY(-3px)" }],
+    { duration:110, easing:"cubic-bezier(0.4,0,1,1)" }
+  );
+  out.onfinish = () => {
+    el.textContent = newText;
+    el.animate(
+      [{ opacity:0, transform:"translateY(3px)" }, { opacity:1, transform:"translateY(0)" }],
+      { duration:180, easing:"cubic-bezier(0.23,1,0.32,1)" }
+    );
+  };
+}
+
+function updateAuthModeUI(animated){
   const isLogin = authMode === "login";
   document.getElementById("authTabLogin").classList.toggle("active", isLogin);
   document.getElementById("authTabSignup").classList.toggle("active", !isLogin);
   document.getElementById("authTabIndicator").style.transform = isLogin ? "translateX(0)" : "translateX(100%)";
-  document.getElementById("accountAuthTitle").textContent = isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta";
-  document.getElementById("custAuthSubmit").querySelector(".btn-label").textContent = isLogin ? "Iniciar sesión" : "Registrarme";
+  const titleEl = document.getElementById("accountAuthTitle");
+  const labelEl = document.getElementById("custAuthSubmit").querySelector(".btn-label");
+  const newTitle = isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta";
+  const newLabel = isLogin ? "Iniciar sesión" : "Registrarme";
+  if(animated){
+    crossfadeText(titleEl, newTitle);
+    crossfadeText(labelEl, newLabel);
+  }else{
+    titleEl.textContent = newTitle;
+    labelEl.textContent = newLabel;
+  }
   document.getElementById("accountAuthMsg").style.display = "none";
+}
+
+// Shows a message in the login/signup form, with a shake on errors to make them felt, not just read.
+function showAuthMsg(type, text){
+  const msgEl = document.getElementById("accountAuthMsg");
+  msgEl.className = "msg " + type;
+  msgEl.textContent = text;
+  msgEl.style.display = "block";
+  msgEl.classList.remove("msg-shake");
+  if(type === "err"){
+    void msgEl.offsetWidth;
+    msgEl.classList.add("msg-shake");
+  }
 }
 
 document.getElementById("accountBtn").addEventListener("click", async () => {
@@ -2266,12 +2580,12 @@ document.getElementById("accountCloseBtn2").addEventListener("click", () => {
 document.getElementById("authTabLogin").addEventListener("click", () => {
   if(authMode === "login") return;
   authMode = "login";
-  updateAuthModeUI();
+  updateAuthModeUI(true);
 });
 document.getElementById("authTabSignup").addEventListener("click", () => {
   if(authMode === "signup") return;
   authMode = "signup";
-  updateAuthModeUI();
+  updateAuthModeUI(true);
 });
 
 document.getElementById("togglePasswordBtn").addEventListener("click", () => {
@@ -2286,13 +2600,10 @@ document.getElementById("togglePasswordBtn").addEventListener("click", () => {
 document.getElementById("custAuthSubmit").addEventListener("click", async () => {
   const email = document.getElementById("custEmail").value.trim();
   const password = document.getElementById("custPassword").value;
-  const msgEl = document.getElementById("accountAuthMsg");
   const submitBtn = document.getElementById("custAuthSubmit");
   const labelEl = submitBtn.querySelector(".btn-label");
   if(!email || !password){
-    msgEl.className = "msg err";
-    msgEl.textContent = "Completa correo y contraseña.";
-    msgEl.style.display = "block";
+    showAuthMsg("err", "Completa correo y contraseña.");
     return;
   }
   const originalLabel = labelEl.textContent;
@@ -2308,20 +2619,16 @@ document.getElementById("custAuthSubmit").addEventListener("click", async () => 
     submitBtn.disabled = false;
     submitBtn.classList.remove("loading");
     labelEl.textContent = originalLabel;
-    msgEl.className = "msg err";
-    msgEl.textContent = authMode === "login"
+    showAuthMsg("err", authMode === "login"
       ? "Correo o contraseña incorrectos."
-      : "No se pudo crear la cuenta. Verifica el correo o intenta con otro.";
-    msgEl.style.display = "block";
+      : "No se pudo crear la cuenta. Verifica el correo o intenta con otro.");
     return;
   }
   if(authMode === "signup" && !result.data.session){
     submitBtn.disabled = false;
     submitBtn.classList.remove("loading");
     labelEl.textContent = originalLabel;
-    msgEl.className = "msg ok";
-    msgEl.textContent = "¡Cuenta creada! Revisa tu correo para confirmarla antes de iniciar sesión.";
-    msgEl.style.display = "block";
+    showAuthMsg("ok", "¡Cuenta creada! Revisa tu correo para confirmarla antes de iniciar sesión.");
     return;
   }
   submitBtn.disabled = false;
