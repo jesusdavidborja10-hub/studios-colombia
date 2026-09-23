@@ -135,27 +135,30 @@
     background:linear-gradient(135deg, #FFD873 0%, var(--gold) 55%, #D89A2E 100%);
     border:1px solid rgba(244,185,66,0.6);
     color:#14100E;
-    font-size:12px;
+    font-size:12.5px;
     font-weight:700;
-    padding:9px 16px;
+    letter-spacing:0.01em;
+    padding:10px 18px;
     cursor:pointer;
     white-space:nowrap;
     max-width:180px;
-    border-radius:8px;
+    border-radius:9px;
     position:relative;
     overflow:hidden;
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    transition:box-shadow 0.25s ease, transform 0.15s ease;
+    gap:7px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.3);
+    transition:box-shadow 0.25s var(--ease-out), transform 0.15s var(--ease-out);
   }
-  .btn-account-icon{flex-shrink:0;}
+  .btn-account-icon{flex-shrink:0; transition:transform 0.2s var(--ease-out);}
   .btn-account-label{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
   @media (hover:hover) and (pointer:fine){
     .btn-account:hover{
-      box-shadow:0 0 0 1px var(--gold), 0 0 18px rgba(244,185,66,0.55);
+      box-shadow:0 4px 16px rgba(244,185,66,0.4), inset 0 1px 0 rgba(255,255,255,0.35);
       transform:translateY(-1px);
     }
+    .btn-account:hover .btn-account-icon{transform:scale(1.1);}
   }
   .btn-account:active{transform:scale(0.97);}
 
@@ -301,12 +304,26 @@
 
   /* ---------- CATEGORY FILTER PILLS ---------- */
   .cat-tabs{
+    position:relative;
     display:flex;
     flex-wrap:wrap;
     gap:8px;
     margin:-6px 0 22px 0;
   }
+  /* One shared gold pill slides between filters instead of each button flipping color on its own. */
+  .cat-tab-pill{
+    position:absolute;
+    top:0; left:0;
+    border-radius:999px;
+    background:var(--gold);
+    box-shadow:0 2px 8px rgba(244,185,66,0.35);
+    opacity:0;
+    pointer-events:none;
+    transition:left 0.36s var(--ease-drawer), width 0.36s var(--ease-drawer), top 0.28s var(--ease-out), opacity 0.2s var(--ease-out);
+  }
   .cat-tab{
+    position:relative;
+    z-index:1;
     display:inline-flex;
     align-items:center;
     gap:7px;
@@ -320,7 +337,7 @@
     cursor:pointer;
     white-space:nowrap;
     flex-shrink:0;
-    transition:border-color 0.2s var(--ease-out), color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), transform 0.1s ease;
+    transition:border-color 0.28s var(--ease-out), color 0.28s var(--ease-out), background-color 0.28s var(--ease-out), transform 0.1s ease;
   }
   .cat-tab::before{
     content:"";
@@ -336,7 +353,8 @@
   @media (hover:hover) and (pointer:fine){
     .cat-tab:not(.active):hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 10px rgba(47,95,222,0.3);}
   }
-  .cat-tab.active{background:var(--gold); color:#14100E; border-color:var(--gold);}
+  /* The pill (not the button) now carries the gold fill, so the active button goes transparent and lets it show through. */
+  .cat-tab.active{background:transparent; color:#14100E; border-color:transparent;}
   @media (max-width:640px){
     .cat-tabs{
       flex-wrap:nowrap;
@@ -560,40 +578,47 @@
     bottom:24px;
     background:var(--gold);
     color:#0B0D12;
-    padding:14px 20px;
+    padding:15px 22px;
     font-weight:800;
-    font-size:14px;
+    font-size:14.5px;
     cursor:pointer;
     display:flex;
     align-items:center;
     gap:10px;
     clip-path:polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-    box-shadow:0 4px 24px rgba(244,185,66,0.35);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.3),
+      0 12px 32px rgba(244,185,66,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.35);
     z-index:30;
     border:none;
     overflow:hidden;
-    transition:box-shadow 0.25s ease, transform 0.1s ease;
+    transition:box-shadow 0.25s var(--ease-out), transform 0.2s var(--ease-out);
   }
   #cartFab:active{transform:scale(0.96);}
   @media (hover:hover) and (pointer:fine){
     #cartFab:hover{
-      box-shadow:0 4px 30px rgba(244,185,66,0.6);
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.35),
+        0 16px 40px rgba(244,185,66,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+      transform:translateY(-2px);
     }
   }
-  #cartFab.bump{animation:cartBump 0.6s ease;}
+  #cartFab.bump{animation:cartBump 0.52s var(--ease-out);}
   @keyframes cartBump{
     0%{transform:scale(1);}
-    30%{transform:scale(1.18);}
-    55%{transform:scale(0.94);}
-    75%{transform:scale(1.06);}
+    28%{transform:scale(1.16);}
+    52%{transform:scale(0.95);}
+    74%{transform:scale(1.05);}
     100%{transform:scale(1);}
   }
   #cartFab .count{
     background:#0B0D12;
     color:var(--gold);
     border-radius:50%;
-    width:22px;
-    height:22px;
+    width:23px;
+    height:23px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -1478,6 +1503,7 @@
     .msg.msg-shake{animation:none;}
     .auth-logo-enter{animation:none;}
     .nav-tab-indicator{transition:none;}
+    .cat-tab-pill{transition:opacity 0.2s ease;}
   }
 </style>
 </head>
@@ -1658,7 +1684,7 @@
       <span class="section-accent" aria-hidden="true"></span>
       <h2 class="section-title">Catálogo<span class="section-count" id="catalogCount"></span></h2>
     </div>
-    <div class="cat-tabs" id="catTabs" style="display:none;"></div>
+    <div class="cat-tabs" id="catTabs" style="display:none;"><span class="cat-tab-pill" id="catTabPill" aria-hidden="true"></span></div>
     <div class="grid" id="grid"></div>
   </section>
 
@@ -1889,19 +1915,72 @@ async function loadCategories(){
   categories = error || !data ? [] : data;
 }
 
-function renderCategoryTabs(){
+// Positions the shared gold pill under whichever filter is active, so it slides
+// between filters instead of each button flipping its own background on/off.
+function positionCatTabPill(instant){
+  const el = document.getElementById("catTabs");
+  const pill = document.getElementById("catTabPill");
+  if(!el || !pill) return;
+  const active = el.querySelector(".cat-tab.active");
+  if(!active){ pill.style.opacity = "0"; return; }
+  const elRect = el.getBoundingClientRect();
+  const btnRect = active.getBoundingClientRect();
+  const apply = () => {
+    pill.style.opacity = "1";
+    pill.style.left = (btnRect.left - elRect.left + el.scrollLeft) + "px";
+    pill.style.top = (btnRect.top - elRect.top + el.scrollTop) + "px";
+    pill.style.width = btnRect.width + "px";
+    pill.style.height = btnRect.height + "px";
+  };
+  if(instant){
+    // First paint: place the pill under "Todas" with no slide-in from the corner.
+    const prevTransition = pill.style.transition;
+    pill.style.transition = "none";
+    apply();
+    void pill.offsetWidth;
+    pill.style.transition = prevTransition;
+  }else{
+    apply();
+  }
+}
+
+// Reuses existing button elements (matched by category id) instead of tearing the
+// whole row down on every click, so the active/inactive color change and the pill's
+// slide animate together instead of the destination label popping in already-dark.
+function renderCategoryTabs(instant){
   const el = document.getElementById("catTabs");
   if(categories.length === 0){
+    el.querySelectorAll(".cat-tab").forEach(b => b.remove());
     el.style.display = "none";
-    el.innerHTML = "";
     return;
   }
   el.style.display = "flex";
+  if(!document.getElementById("catTabPill")){
+    el.insertAdjacentHTML("afterbegin", '<span class="cat-tab-pill" id="catTabPill" aria-hidden="true"></span>');
+  }
   const tabs = [{ id: null, name: "Todas" }, ...categories];
-  el.innerHTML = tabs.map(t => `
-    <button class="cat-tab ${activeCategory === t.id ? "active" : ""}" data-cat="${t.id === null ? "" : t.id}">${escapeHtml(t.name)}</button>
-  `).join("");
+  const wantedKeys = tabs.map(t => t.id === null ? "" : t.id);
+  el.querySelectorAll(".cat-tab").forEach(b => { if(!wantedKeys.includes(b.dataset.cat)) b.remove(); });
+
+  let prevEl = document.getElementById("catTabPill");
+  tabs.forEach(t => {
+    const key = t.id === null ? "" : t.id;
+    let btn = Array.from(el.querySelectorAll(".cat-tab")).find(b => b.dataset.cat === key);
+    if(!btn){
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cat-tab";
+      btn.dataset.cat = key;
+      el.appendChild(btn);
+    }
+    if(btn.textContent !== t.name) btn.textContent = t.name;
+    btn.classList.toggle("active", activeCategory === t.id);
+    if(prevEl.nextElementSibling !== btn) prevEl.after(btn);
+    prevEl = btn;
+  });
+  positionCatTabPill(instant);
 }
+window.addEventListener("resize", () => positionCatTabPill(true));
 
 // Shared "no content yet" treatment (catalog, filtered category, custom options).
 function emptyStateHtml(text){
@@ -2826,7 +2905,7 @@ document.getElementById("promoCloseX").addEventListener("click", () => {
   await loadCategories();
   await loadProducts();
   await loadCustomOptions();
-  renderCategoryTabs();
+  renderCategoryTabs(true);
   renderCart();
 })();
 </script>
