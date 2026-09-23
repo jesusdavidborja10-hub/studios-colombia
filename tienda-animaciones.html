@@ -226,6 +226,30 @@
     letter-spacing:-0.5px;
     margin:8px 0 22px 0;
   }
+  .section-heading{
+    display:flex;
+    align-items:center;
+    margin:8px 0 20px 0;
+  }
+  .section-heading .section-title{margin:0;}
+  .section-accent{
+    width:4px;
+    height:24px;
+    margin-right:13px;
+    border-radius:2px;
+    background:linear-gradient(180deg, var(--gold), rgba(244,185,66,0.15));
+    flex-shrink:0;
+  }
+  .section-count{
+    display:inline-block;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    margin-left:10px;
+    vertical-align:middle;
+    font-variant-numeric:tabular-nums;
+  }
   .custom-intro{
     color:var(--muted);
     font-size:14.5px;
@@ -236,31 +260,93 @@
   }
   .custom-intro .intro-scroll{color:var(--gold);}
 
-  /* ---------- CATEGORY TABS ---------- */
+  /* ---------- MAIN NAV TABS (section switch: underline indicator) ---------- */
+  .main-nav-tabs{
+    position:relative;
+    display:flex;
+    gap:30px;
+    margin:0 0 28px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .nav-tab{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:14.5px;
+    font-weight:700;
+    padding:0 1px 14px 1px;
+    cursor:pointer;
+    transition:color 0.2s var(--ease-out), transform 0.1s ease;
+  }
+  .nav-tab:active{transform:scale(0.97);}
+  @media (hover:hover) and (pointer:fine){
+    .nav-tab:not(.active):hover{color:var(--text);}
+  }
+  .nav-tab.active{color:var(--gold);}
+  .nav-tab-indicator{
+    position:absolute;
+    bottom:-1px;
+    left:0;
+    height:2px;
+    width:0;
+    background:var(--gold);
+    border-radius:2px;
+    box-shadow:0 1px 8px rgba(244,185,66,0.45);
+    transition:left 0.32s var(--ease-drawer), width 0.32s var(--ease-drawer);
+  }
+  @media (max-width:640px){
+    .main-nav-tabs{gap:22px;}
+    .nav-tab{font-size:13.5px;}
+  }
+
+  /* ---------- CATEGORY FILTER PILLS ---------- */
   .cat-tabs{
     display:flex;
     flex-wrap:wrap;
-    gap:10px;
+    gap:8px;
     margin:-6px 0 22px 0;
   }
   .cat-tab{
-    background:var(--panel);
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    background:var(--panel2);
     border:1px solid var(--border);
     color:var(--muted);
     font-size:13px;
     font-weight:600;
-    padding:9px 16px;
+    padding:8px 16px;
+    border-radius:999px;
     cursor:pointer;
-    clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-    transition:border-color 0.15s ease, color 0.25s ease, background 0.25s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    white-space:nowrap;
+    flex-shrink:0;
+    transition:border-color 0.2s var(--ease-out), color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), transform 0.1s ease;
   }
-  .cat-tab:active{transform:scale(0.97);}
+  .cat-tab::before{
+    content:"";
+    width:6px; height:6px;
+    border-radius:50%;
+    background:currentColor;
+    opacity:0;
+    transform:scale(0.4);
+    transition:opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+  }
+  .cat-tab.active::before{opacity:1; transform:scale(1);}
+  .cat-tab:active{transform:scale(0.96);}
   @media (hover:hover) and (pointer:fine){
-    .cat-tab:hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 12px rgba(47,95,222,0.35);}
+    .cat-tab:not(.active):hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 10px rgba(47,95,222,0.3);}
   }
   .cat-tab.active{background:var(--gold); color:#14100E; border-color:var(--gold);}
-  .main-nav-tabs{margin:0 0 26px 0;}
-  .main-nav-tabs .cat-tab{font-size:14px;padding:11px 18px;}
+  @media (max-width:640px){
+    .cat-tabs{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      scrollbar-width:none;
+      margin-left:-28px; margin-right:-28px;
+      padding:0 28px 2px 28px;
+    }
+    .cat-tabs::-webkit-scrollbar{display:none;}
+  }
 
   /* ---------- MAIN SECTION SWITCH ---------- */
   #catalogSection, #customSection{
@@ -438,11 +524,20 @@
 
   .empty-state{
     grid-column:1/-1;
-    padding:60px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:64px 24px;
     text-align:center;
     color:var(--muted);
-    border:1px dashed var(--border);
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
   }
+  .empty-state svg{opacity:0.4;}
+  .empty-state p{margin:0; font-size:14px; line-height:1.6; max-width:320px;}
   .empty-state b{color:var(--text);}
 
   /* ---------- CUSTOM OPTIONS ---------- */
@@ -1382,6 +1477,7 @@
     .qty-value.qty-bump, #cartTotalValue.total-bump{animation:none;}
     .msg.msg-shake{animation:none;}
     .auth-logo-enter{animation:none;}
+    .nav-tab-indicator{transition:none;}
   }
 </style>
 </head>
@@ -1551,13 +1647,17 @@
 <p class="welcome-msg">En Studios Colombia no eres solo un cliente más, eres familia. Te acompañamos en cada paso, con calidez y confianza, para que te sientas como en casa.<svg class="heart-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></p>
 
 <main>
-  <div class="cat-tabs main-nav-tabs">
-    <button class="cat-tab active" id="navCatalogBtn">Catálogo de animaciones</button>
-    <button class="cat-tab" id="navCustomBtn">Personalizados y Precios</button>
-  </div>
+  <nav class="main-nav-tabs">
+    <button class="nav-tab active" id="navCatalogBtn">Catálogo de animaciones</button>
+    <button class="nav-tab" id="navCustomBtn">Personalizados y Precios</button>
+    <span class="nav-tab-indicator" id="navTabIndicator"></span>
+  </nav>
 
   <section id="catalogSection">
-    <h2 class="section-title">Catálogo</h2>
+    <div class="section-heading">
+      <span class="section-accent" aria-hidden="true"></span>
+      <h2 class="section-title">Catálogo<span class="section-count" id="catalogCount"></span></h2>
+    </div>
     <div class="cat-tabs" id="catTabs" style="display:none;"></div>
     <div class="grid" id="grid"></div>
   </section>
@@ -1803,15 +1903,26 @@ function renderCategoryTabs(){
   `).join("");
 }
 
+// Shared "no content yet" treatment (catalog, filtered category, custom options).
+function emptyStateHtml(text){
+  return `<div class="empty-state"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg><p>${text}</p></div>`;
+}
+
 function renderGrid(){
   const grid = document.getElementById("grid");
   const list = activeCategory ? products.filter(p => p.categoryId === activeCategory) : products;
+  const countTag = document.getElementById("catalogCount");
+  if(countTag){
+    countTag.textContent = products.length > 0
+      ? `· ${list.length} ${list.length === 1 ? "animación" : "animaciones"}`
+      : "";
+  }
   if(products.length === 0){
-    grid.innerHTML = '<div class="empty-state">Aún no hay animaciones cargadas. Vuelve pronto.</div>';
+    grid.innerHTML = emptyStateHtml("Aún no hay animaciones cargadas. Vuelve pronto.");
     return;
   }
   if(list.length === 0){
-    grid.innerHTML = '<div class="empty-state">No hay animaciones en esta categoría todavía.</div>';
+    grid.innerHTML = emptyStateHtml("No hay animaciones en esta categoría todavía.");
     return;
   }
   grid.innerHTML = list.map(p => `
@@ -1983,7 +2094,7 @@ function renderCustomGrid(){
   const introScroll = document.getElementById("customIntroScroll");
   if(introScroll) introScroll.style.display = customOptions.length < 2 ? "none" : "inline";
   if(customOptions.length === 0){
-    grid.innerHTML = '<div class="empty-state">Muy pronto vas a poder ver aquí las opciones personalizadas.</div>';
+    grid.innerHTML = emptyStateHtml("Muy pronto vas a poder ver aquí las opciones personalizadas.");
     return;
   }
   grid.innerHTML = customOptions.map(opt => `
@@ -2023,10 +2134,28 @@ function orderCustomOption(id){
   window.open(url, "_blank");
 }
 
+// Slides the underline to sit under whichever nav tab is active.
+function positionNavIndicator(){
+  const nav = document.querySelector(".main-nav-tabs");
+  const active = nav && nav.querySelector(".nav-tab.active");
+  const indicator = document.getElementById("navTabIndicator");
+  if(!nav || !active || !indicator) return;
+  const navRect = nav.getBoundingClientRect();
+  const tabRect = active.getBoundingClientRect();
+  indicator.style.left = (tabRect.left - navRect.left) + "px";
+  indicator.style.width = tabRect.width + "px";
+}
+window.addEventListener("resize", positionNavIndicator);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(positionNavIndicator).catch(() => {});
+}
+positionNavIndicator();
+
 function switchMainSection(section){
   const isCatalog = section === "catalog";
   document.getElementById("navCatalogBtn").classList.toggle("active", isCatalog);
   document.getElementById("navCustomBtn").classList.toggle("active", !isCatalog);
+  positionNavIndicator();
 
   const incoming = document.getElementById(isCatalog ? "catalogSection" : "customSection");
   const outgoing = document.getElementById(isCatalog ? "customSection" : "catalogSection");
