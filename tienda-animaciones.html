@@ -427,6 +427,25 @@
     background:var(--panel2);
     overflow:visible;
   }
+  /* Catalog cards only: square thumbnails (1:1) instead of the vertical 9:16
+     used everywhere else (Personalizados y Precios keeps the rule above). */
+  #grid .thumb-wrap{
+    aspect-ratio:1/1;
+  }
+  /* YouTube/Drive embeds letterbox the video to fit whatever box they're
+     given instead of cropping it, so a vertical/horizontal clip dropped into
+     a square thumb would show black bars. Oversize the iframe and crop it
+     with the thumb-clip's overflow:hidden so it fills the square like
+     object-fit:cover would for a real <video> or <img>. Scoped to the
+     catalog only — Personalizados keeps its original vertical previews. */
+  #grid iframe.preview-media{
+    inset:auto;
+    top:50%;
+    left:50%;
+    width:200%;
+    height:200%;
+    transform:translate(-50%,-50%);
+  }
   /* Clips the photo/placeholder only, so the price tag below can float past
      the thumbnail's own edge without being cut off by it. */
   .thumb-clip{
@@ -2115,7 +2134,11 @@ function wireVideoPreviews(containerSelector, list){
       if(mediaEl) return;
       mediaEl = buildPreviewEl(url);
       if(!mediaEl) return;
-      wrap.appendChild(mediaEl);
+      // Append inside .thumb-clip (same box as the thumbnail image, but with
+      // overflow:hidden) instead of .thumb-wrap directly, so an oversized
+      // iframe used to crop away letterboxing gets clipped to the thumb
+      // instead of spilling over the card.
+      (wrap.querySelector(".thumb-clip") || wrap).appendChild(mediaEl);
       if(mediaEl.tagName === "VIDEO"){
         mediaEl.play().catch(() => {});
       }
