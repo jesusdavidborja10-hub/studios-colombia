@@ -214,6 +214,10 @@
   @media (hover:hover) and (pointer:fine){
     .video-upload-btn:hover{border-color:var(--blue);}
   }
+  table.admin-table button.edit-btn{color:var(--blue);display:inline-flex;align-items:center;gap:4px;}
+  @media (hover:hover) and (pointer:fine){
+    table.admin-table button.edit-btn:hover{border-color:var(--blue);}
+  }
 
   /* ---- Categories manage list (fallback plain rows, kept for reference) ---- */
   .admin-list-row{
@@ -330,10 +334,18 @@
           <div class="field">
             <label>Video del producto (opcional)</label>
             <input type="file" id="pVideoFile" accept="video/*">
-            <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos).</div>
+            <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos). Si estás editando y no eliges uno nuevo, se mantiene el video actual.</div>
+          </div>
+          <div class="field" id="pCurrentPreview" style="display:none;">
+            <label>Archivo actual</label>
+            <img id="pCurrentImg" src="" alt="" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
+            <div class="hint" id="pCurrentVideoInfo"></div>
           </div>
           <div id="addMsg" class="msg" style="display:none;"></div>
-          <button class="btn-primary" id="pAddBtn" style="width:100%;">Agregar al catálogo</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" id="pAddBtn" style="flex:1;">Agregar al catálogo</button>
+            <button class="btn-secondary" id="pCancelBtn" type="button" style="display:none;flex:0 0 auto;">Cancelar</button>
+          </div>
         </div>
       </div>
 
@@ -388,8 +400,15 @@
             <input type="text" id="coVideoUrl" placeholder="https://drive.google.com/... o https://youtube.com/...">
             <div class="hint">Pega el link para compartir (Google Drive, YouTube, etc.). Se muestra embebido cuando es posible.</div>
           </div>
+          <div class="field" id="coCurrentPreview" style="display:none;">
+            <label>Imagen actual</label>
+            <img id="coCurrentImg" src="" alt="" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;">
+          </div>
           <div id="coMsg" class="msg" style="display:none;"></div>
-          <button class="btn-primary" id="coAddBtn" style="width:100%;">Agregar opción</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" id="coAddBtn" style="flex:1;">Agregar opción</button>
+            <button class="btn-secondary" id="coCancelBtn" type="button" style="display:none;flex:0 0 auto;">Cancelar</button>
+          </div>
         </div>
       </div>
 
@@ -450,6 +469,7 @@ let products = [];
 let categories = [];
 let customOptions = [];
 let editingCustomOptionId = null;
+let editingProductId = null;
 
 function formatPrice(n){
   const num = Number(n) || 0;
@@ -504,6 +524,57 @@ setupCollapsible("addCustomOptionToggle", "addCustomOptionBody");
 function openCustomOptionForm(){
   document.getElementById("addCustomOptionBody").hidden = false;
   document.getElementById("addCustomOptionToggle").classList.add("open");
+}
+
+// ---------- Product edit form ----------
+function clearProductFormFields(){
+  editingProductId = null;
+  document.getElementById("pName").value = "";
+  document.getElementById("pPrice").value = "";
+  document.getElementById("pPriceUsd").value = "";
+  document.getElementById("pImage").value = "";
+  document.getElementById("pVideoFile").value = "";
+  document.getElementById("pCategory").value = "";
+  document.getElementById("pAddBtn").textContent = "Agregar al catálogo";
+  document.getElementById("addProductToggle").textContent = "+ Agregar nueva animación";
+  document.getElementById("pCancelBtn").style.display = "none";
+  document.getElementById("pCurrentPreview").style.display = "none";
+}
+
+function resetProductForm(){
+  clearProductFormFields();
+  document.getElementById("addMsg").style.display = "none";
+}
+
+function openProductEditForm(p){
+  editingProductId = p.id;
+  document.getElementById("pName").value = p.name;
+  document.getElementById("pPrice").value = p.price;
+  document.getElementById("pPriceUsd").value = (p.priceUsd !== null && p.priceUsd !== undefined) ? p.priceUsd : "";
+  document.getElementById("pCategory").value = p.categoryId || "";
+  document.getElementById("pImage").value = "";
+  document.getElementById("pVideoFile").value = "";
+
+  const previewImg = document.getElementById("pCurrentImg");
+  if(p.image){
+    previewImg.src = p.image;
+    previewImg.style.display = "block";
+  }else{
+    previewImg.style.display = "none";
+  }
+  document.getElementById("pCurrentVideoInfo").textContent = p.videoUrl
+    ? "Video actual: sí (se mantiene si no subes uno nuevo)."
+    : "Sin video actual.";
+  document.getElementById("pCurrentPreview").style.display = "block";
+
+  document.getElementById("pAddBtn").textContent = "Guardar cambios";
+  document.getElementById("addProductToggle").textContent = "Editar animación";
+  document.getElementById("pCancelBtn").style.display = "inline-block";
+  document.getElementById("addMsg").style.display = "none";
+
+  document.getElementById("addProductBody").hidden = false;
+  document.getElementById("addProductToggle").classList.add("open");
+  document.getElementById("addProductToggle").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // ---------- Admin check ----------
@@ -570,6 +641,10 @@ function renderAdminList(){
           🎬
           <input type="file" accept="video/*" data-videoprod="${p.id}" style="display:none;">
         </label>
+        <button class="edit-btn" data-editprod="${p.id}" title="Editar producto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+          Editar
+        </button>
         <button data-del="${p.id}">Eliminar</button>
       </td>
     </tr>
@@ -631,6 +706,9 @@ function resetCustomOptionForm(){
   document.getElementById("coImage").value = "";
   document.getElementById("coVideoUrl").value = "";
   document.getElementById("coAddBtn").textContent = "Agregar opción";
+  document.getElementById("addCustomOptionToggle").textContent = "+ Agregar / editar opción";
+  document.getElementById("coCancelBtn").style.display = "none";
+  document.getElementById("coCurrentPreview").style.display = "none";
 }
 
 // ---------- Image compression ----------
@@ -733,7 +811,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
   const file = document.getElementById("pImage").files[0];
   const videoFile = document.getElementById("pVideoFile").files[0];
 
-  if(!name || !price || !file){
+  if(!name || !price || (!editingProductId && !file)){
     msgEl.className = "msg err";
     msgEl.textContent = "Completa nombre, precio e imagen.";
     msgEl.style.display = "block";
@@ -748,11 +826,11 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
   }
 
   msgEl.className = "msg";
-  msgEl.textContent = "Procesando imagen...";
+  msgEl.textContent = file ? "Procesando imagen..." : "Guardando...";
   msgEl.style.display = "block";
 
   try{
-    const imageData = await compressImage(file);
+    const imageData = file ? await compressImage(file) : null;
 
     let videoUrl = null;
     if(videoFile){
@@ -761,46 +839,86 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
     }
 
     const categoryId = document.getElementById("pCategory").value || null;
-    const { data, error } = await sb.from("products").insert({
-      name,
-      price: Number(price),
-      price_usd: priceUsd ? Number(priceUsd) : null,
-      image: imageData,
-      video_url: videoUrl,
-      category_id: categoryId
-    }).select().single();
-    if(error) throw error;
-    products.push({
-      id: data.id,
-      name: data.name,
-      price: data.price,
-      priceUsd: data.price_usd,
-      image: data.image,
-      videoUrl: data.video_url,
-      categoryId: data.category_id
-    });
-    renderAdminList();
-    msgEl.className = "msg ok";
-    msgEl.textContent = "¡Agregado al catálogo!";
-    document.getElementById("pName").value = "";
-    document.getElementById("pPrice").value = "";
-    document.getElementById("pPriceUsd").value = "";
-    document.getElementById("pImage").value = "";
-    document.getElementById("pVideoFile").value = "";
-    document.getElementById("pCategory").value = "";
+
+    if(editingProductId){
+      const updatePayload = {
+        name,
+        price: Number(price),
+        price_usd: priceUsd ? Number(priceUsd) : null,
+        category_id: categoryId
+      };
+      if(imageData) updatePayload.image = imageData;
+      if(videoFile) updatePayload.video_url = videoUrl;
+
+      const { data, error } = await sb.from("products").update(updatePayload).eq("id", editingProductId).select().single();
+      if(error) throw error;
+      const idx = products.findIndex(p => p.id === editingProductId);
+      if(idx !== -1){
+        products[idx] = {
+          id: data.id,
+          name: data.name,
+          price: data.price,
+          priceUsd: data.price_usd,
+          image: data.image,
+          videoUrl: data.video_url,
+          categoryId: data.category_id
+        };
+      }
+      renderAdminList();
+      clearProductFormFields();
+      msgEl.className = "msg ok";
+      msgEl.textContent = "Producto actualizado.";
+    }else{
+      const { data, error } = await sb.from("products").insert({
+        name,
+        price: Number(price),
+        price_usd: priceUsd ? Number(priceUsd) : null,
+        image: imageData,
+        video_url: videoUrl,
+        category_id: categoryId
+      }).select().single();
+      if(error) throw error;
+      products.push({
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        priceUsd: data.price_usd,
+        image: data.image,
+        videoUrl: data.video_url,
+        categoryId: data.category_id
+      });
+      renderAdminList();
+      clearProductFormFields();
+      msgEl.className = "msg ok";
+      msgEl.textContent = "¡Agregado al catálogo!";
+    }
   }catch(err){
     msgEl.className = "msg err";
-    msgEl.textContent = "Hubo un problema guardando el producto. Intenta con otra imagen o video.";
+    msgEl.textContent = editingProductId
+      ? "Hubo un problema guardando los cambios. Intenta con otra imagen o video."
+      : "Hubo un problema guardando el producto. Intenta con otra imagen o video.";
   }
 });
 
+document.getElementById("pCancelBtn").addEventListener("click", () => {
+  resetProductForm();
+});
+
 document.getElementById("adminList").addEventListener("click", async (e) => {
+  const editBtn = e.target.closest("button[data-editprod]");
+  if(editBtn){
+    const p = products.find(pr => pr.id === editBtn.dataset.editprod);
+    if(p) openProductEditForm(p);
+    return;
+  }
+
   const b = e.target.closest("button[data-del]");
   if(!b) return;
   const id = b.dataset.del;
   const { error } = await sb.from("products").delete().eq("id", id);
   if(error) return;
   products = products.filter(p => p.id !== id);
+  if(editingProductId === id) resetProductForm();
   renderAdminList();
 });
 
@@ -961,6 +1079,15 @@ document.getElementById("customOptionsList").addEventListener("click", async (e)
     document.getElementById("coPriceUsd").value = opt.price_usd !== null && opt.price_usd !== undefined ? opt.price_usd : "";
     document.getElementById("coVideoUrl").value = opt.video_url || "";
     document.getElementById("coAddBtn").textContent = "Guardar cambios";
+    document.getElementById("addCustomOptionToggle").textContent = "Editar opción";
+    document.getElementById("coCancelBtn").style.display = "inline-block";
+    const coPreviewImg = document.getElementById("coCurrentImg");
+    if(opt.image_url){
+      coPreviewImg.src = opt.image_url;
+      document.getElementById("coCurrentPreview").style.display = "block";
+    }else{
+      document.getElementById("coCurrentPreview").style.display = "none";
+    }
     document.getElementById("coMsg").style.display = "none";
     openCustomOptionForm();
     document.getElementById("coTitle").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -978,6 +1105,11 @@ document.getElementById("customOptionsList").addEventListener("click", async (e)
     }
     renderCustomOptionsList();
   }
+});
+
+document.getElementById("coCancelBtn").addEventListener("click", () => {
+  resetCustomOptionForm();
+  document.getElementById("coMsg").style.display = "none";
 });
 
 document.getElementById("saveSettingsBtn").addEventListener("click", async () => {
