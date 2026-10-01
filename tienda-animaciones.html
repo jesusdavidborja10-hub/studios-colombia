@@ -25,6 +25,7 @@
 <meta name="twitter:description" content="Animaciones y alertas personalizadas para tu transmisión en vivo (TikTok Live y más). Elige del catálogo o pide la tuya a medida y recíbela por WhatsApp.">
 <meta name="twitter:image" content="https://www.studios-colombia.com/logo-studios-colombia-header.png">
 <link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
+<link rel="apple-touch-icon" href="logo-studios-colombia-favicon.png">
 <link rel="preload" as="image" href="logo-studios-colombia-header.png">
 <script>
   // Intro de entrada: solo la primera vez por visita (sessionStorage). Se decide aquí, antes del primer pintado,
@@ -58,6 +59,9 @@
     --muted:#8792A3;
     --gold:#F4B942;
     --blue:#2F5FDE;
+    /* Lighter than --blue: the raw blue fails WCAG contrast as small text on our dark
+       panels, so any readable blue text/label uses this instead (borders/glows keep --blue). */
+    --blue-text:#6EA8FE;
     --red:#E8433D;
     /* RGB triplets for the brand colors, so every rgba() glow/shadow in the file
        derives from one source instead of repeating the same numbers by hand. */
@@ -354,7 +358,7 @@
   .cat-tab.active::before{opacity:1; transform:scale(1);}
   .cat-tab:active{transform:scale(0.96);}
   @media (hover:hover) and (pointer:fine){
-    .cat-tab:not(.active):hover{border-color:var(--blue); color:var(--blue); box-shadow:0 0 10px rgba(var(--blue-rgb),0.3);}
+    .cat-tab:not(.active):hover{border-color:var(--blue); color:var(--blue-text); box-shadow:0 0 10px rgba(var(--blue-rgb),0.3);}
   }
   /* The pill (not the button) now carries the gold fill, so the active button goes transparent and lets it show through. */
   .cat-tab.active{background:transparent; color:#14100E; border-color:transparent;}
@@ -584,7 +588,7 @@
   }
   .btn-del-item:active{transform:scale(0.92);}
   @media (hover:hover) and (pointer:fine){
-    .btn-del-item:hover{border-color:var(--blue); color:var(--blue);}
+    .btn-del-item:hover{border-color:var(--blue); color:var(--blue-text);}
   }
 
   .empty-state{
@@ -985,12 +989,56 @@
 
   /* ---------- FOOTER ---------- */
   footer{
-    padding:30px 28px 40px 28px;
+    /* Extra bottom padding so the fixed "Ver pedido" / WhatsApp buttons never
+       cover the footer links when the page is scrolled all the way down. */
+    padding:30px 28px 100px 28px;
     text-align:center;
     color:var(--muted);
     font-size:12px;
     border-top:1px solid var(--border);
     margin-top:20px;
+  }
+  .footer-legal{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .footer-legal a{color:var(--muted); text-decoration:underline; text-underline-offset:2px;}
+  @media (hover:hover) and (pointer:fine){
+    .footer-legal a:hover{color:var(--gold);}
+  }
+
+  /* ---------- COOKIE BANNER ---------- */
+  .cookie-banner{
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    color:var(--text);
+    padding:12px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+    text-align:center;
+    font-size:13px;
+  }
+  .cookie-banner p{margin:0;}
+  .cookie-banner a{color:var(--gold); text-decoration:underline; text-underline-offset:2px;}
+  .cookie-banner button{
+    background:var(--gold);
+    color:#0B0D12;
+    border:none;
+    padding:8px 18px;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  @media (max-width:640px){
+    .cookie-banner{padding:10px 14px; font-size:12.5px;}
   }
   /* ---------- MODALS ---------- */
   .modal-overlay{
@@ -1045,6 +1093,18 @@
     box-shadow:0 24px 60px -16px rgba(0,0,0,0.6);
   }
   .field{margin-bottom:16px;}
+  /* Honeypot anti-spam: invisible to people (and skipped by tab order), but a plain
+     text field a bot's autofill script will usually find and fill in. */
+  .hp-field{
+    position:absolute !important;
+    left:-9999px !important;
+    width:1px !important;
+    height:1px !important;
+    overflow:hidden !important;
+    opacity:0 !important;
+    margin:0 !important;
+    pointer-events:none;
+  }
   .field label{
     display:block;
     font-size:11px;
@@ -1357,7 +1417,7 @@
     padding:2px 6px;
     border:1px solid var(--border);
     margin-left:6px;
-    color:var(--blue);
+    color:var(--blue-text);
   }
   .order-card .order-total{color:var(--gold);font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;}
 
@@ -1556,6 +1616,22 @@
 </head>
 <body>
 
+<div id="cookieBanner" class="cookie-banner" role="region" aria-label="Aviso de cookies">
+  <p>Usamos almacenamiento local para que el carrito y tu sesión funcionen bien. <a href="politica-de-privacidad.html">Más información</a></p>
+  <button id="cookieOkBtn" type="button">Entendido</button>
+</div>
+<script>
+  // Oculta el aviso antes del primer pintado si ya se aceptó, para que no haya destello (mismo patrón que el intro).
+  (function(){
+    try{
+      if(localStorage.getItem("cookieConsentAccepted") === "1"){
+        var el = document.getElementById("cookieBanner");
+        if(el) el.style.display = "none";
+      }
+    }catch(e){}
+  })();
+</script>
+
 <div id="intro" aria-hidden="true">
   <div class="intro-bg"></div>
   <div class="intro-halo"></div>
@@ -1746,6 +1822,11 @@
 
 <footer>
   Arma tu pedido y envíalo por WhatsApp con un clic.
+  <div class="footer-legal">
+    <a href="aviso-legal.html">Aviso legal</a>
+    <span aria-hidden="true">·</span>
+    <a href="politica-de-privacidad.html">Política de privacidad</a>
+  </div>
 </footer>
 
 <button id="cartFab">
@@ -1812,6 +1893,10 @@
         <button type="button" class="auth-tab" id="authTabSignup">Registrarme</button>
       </div>
 
+      <div class="field hp-field" aria-hidden="true">
+        <label for="custWebsite">Sitio web</label>
+        <input type="text" id="custWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <div class="field">
         <label>Correo</label>
         <div class="input-icon-wrap">
@@ -1904,6 +1989,7 @@ let customerProfile = { name: "", whatsapp: "" };
 let customerCartOrderId = null; // id of the active 'cart'-status row in `orders`, if any
 let pendingCartRestored = false;
 let authMode = "login"; // "login" | "signup"
+let authCooldownUntil = 0; // client-side throttle against repeated login/signup attempts
 
 function formatPrice(n){
   const num = Number(n) || 0;
@@ -2695,6 +2781,12 @@ document.getElementById("waFab").addEventListener("click", function(){
 document.getElementById("closeCart").addEventListener("click", closeCart);
 document.getElementById("overlay").addEventListener("click", closeCart);
 document.getElementById("clearCartBtn").addEventListener("click", clearCart);
+
+document.getElementById("cookieOkBtn").addEventListener("click", () => {
+  try{ localStorage.setItem("cookieConsentAccepted", "1"); }catch(e){}
+  const el = document.getElementById("cookieBanner");
+  if(el) el.remove();
+});
 function closeCart(){
   const panel = document.getElementById("cartPanel");
   const overlay = document.getElementById("overlay");
@@ -2825,6 +2917,7 @@ document.getElementById("accountBtn").addEventListener("click", async () => {
     document.getElementById("accountLoggedIn").style.display = "none";
     document.getElementById("custEmail").value = "";
     document.getElementById("custPassword").value = "";
+    document.getElementById("custWebsite").value = "";
   }
   showAccountModal();
 });
@@ -2858,8 +2951,23 @@ document.getElementById("togglePasswordBtn").addEventListener("click", () => {
 document.getElementById("custAuthSubmit").addEventListener("click", async () => {
   const email = document.getElementById("custEmail").value.trim();
   const password = document.getElementById("custPassword").value;
+  const honeypot = document.getElementById("custWebsite").value;
   const submitBtn = document.getElementById("custAuthSubmit");
   const labelEl = submitBtn.querySelector(".btn-label");
+
+  if(Date.now() < authCooldownUntil){
+    showAuthMsg("err", "Espera unos segundos antes de intentar de nuevo.");
+    return;
+  }
+  // Honeypot: a real visitor never fills this hidden field, only bots that auto-fill every input.
+  // Pretend the attempt happened (same cooldown, same generic error) without calling Supabase.
+  if(honeypot){
+    authCooldownUntil = Date.now() + 3000;
+    showAuthMsg("err", authMode === "login"
+      ? "Correo o contraseña incorrectos."
+      : "No se pudo crear la cuenta. Verifica el correo o intenta con otro.");
+    return;
+  }
   if(!email || !password){
     showAuthMsg("err", "Completa correo y contraseña.");
     return;
@@ -2872,6 +2980,7 @@ document.getElementById("custAuthSubmit").addEventListener("click", async () => 
   const result = authMode === "login"
     ? await sb.auth.signInWithPassword({ email, password })
     : await sb.auth.signUp({ email, password });
+  authCooldownUntil = Date.now() + 3000;
 
   if(result.error){
     submitBtn.disabled = false;

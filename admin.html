@@ -18,6 +18,8 @@
     --muted:#8792A3;
     --gold:#F4B942;
     --blue:#2F5FDE;
+    /* Lighter than --blue: the raw blue fails WCAG contrast as small text on dark panels. */
+    --blue-text:#6EA8FE;
     --red:#E8433D;
   }
 
@@ -210,11 +212,11 @@
     background:none;border:1px solid var(--border);color:var(--red);
     cursor:pointer;font-size:11px;padding:5px 8px;
   }
-  .video-upload-btn{color:var(--blue);display:inline-flex;align-items:center;flex-shrink:0;transition:border-color 0.15s ease;}
+  .video-upload-btn{color:var(--blue-text);display:inline-flex;align-items:center;flex-shrink:0;transition:border-color 0.15s ease;}
   @media (hover:hover) and (pointer:fine){
     .video-upload-btn:hover{border-color:var(--blue);}
   }
-  table.admin-table button.edit-btn{color:var(--blue);display:inline-flex;align-items:center;gap:4px;}
+  table.admin-table button.edit-btn{color:var(--blue-text);display:inline-flex;align-items:center;gap:4px;}
   @media (hover:hover) and (pointer:fine){
     table.admin-table button.edit-btn:hover{border-color:var(--blue);}
   }
@@ -247,7 +249,7 @@
     background:none;border:1px solid var(--border);color:var(--red);
     cursor:pointer;font-size:11px;padding:5px 10px;
   }
-  .co-actions button.edit-btn{color:var(--blue);}
+  .co-actions button.edit-btn{color:var(--blue-text);}
 
   #loginSection{max-width:380px;margin:64px auto 0;}
 
