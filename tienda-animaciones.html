@@ -27,6 +27,9 @@
 <link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
 <link rel="apple-touch-icon" href="logo-studios-colombia-favicon.png">
 <link rel="preload" as="image" href="logo-studios-colombia-header.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
   // Intro de entrada: solo la primera vez por visita (sessionStorage). Se decide aquí, antes del primer pintado,
   // para que el overlay ya esté cubriendo la página y no haya destello del contenido.
@@ -51,6 +54,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
 
   :root{
+    color-scheme:dark;
     --bg:#0B0D12;
     --panel:#12161F;
     --panel2:#1A2029;
@@ -76,6 +80,28 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   button:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .sr-only{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  .skip-link{
+    position:absolute;
+    left:12px; top:-60px;
+    background:var(--gold);
+    color:#0B0D12;
+    font-weight:700;
+    font-size:13px;
+    padding:10px 16px;
+    border-radius:0 0 8px 8px;
+    z-index:1000;
+    transition:top 0.2s var(--ease-out);
+  }
+  .skip-link:focus{top:0;}
   body{
     background:
       radial-gradient(circle at 15% -10%, rgba(var(--gold-rgb),0.06), transparent 40%),
@@ -110,7 +136,8 @@
     align-items:center;
     gap:12px;
   }
-  .logo span{color:var(--gold);}
+  .logo #storeNameDisplay{color:var(--gold);}
+  .logo h1{margin:0; font:inherit;}
   .logo-mark{
     height:72px;
     width:72px;
@@ -298,11 +325,13 @@
     bottom:-1px;
     left:0;
     height:2px;
-    width:0;
+    width:1px;
     background:var(--gold);
     border-radius:2px;
     box-shadow:0 1px 8px rgba(var(--gold-rgb),0.45);
-    transition:left 0.32s var(--ease-drawer), width 0.32s var(--ease-drawer);
+    transform-origin:left center;
+    transform:translateX(0) scaleX(0);
+    transition:transform 0.32s var(--ease-drawer);
   }
   @media (max-width:640px){
     .main-nav-tabs{gap:22px;}
@@ -1616,6 +1645,8 @@
 </head>
 <body>
 
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
 <div id="cookieBanner" class="cookie-banner" role="region" aria-label="Aviso de cookies">
   <p>Usamos almacenamiento local para que el carrito y tu sesión funcionen bien. <a href="politica-de-privacidad.html">Más información</a></p>
   <button id="cookieOkBtn" type="button">Entendido</button>
@@ -1638,7 +1669,7 @@
   <div class="intro-stage">
     <div class="intro-mark">
       <svg class="intro-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49.6" pathLength="1"></circle></svg>
-      <img class="intro-logo" src="logo-studios-colombia-header.png" alt="">
+      <img class="intro-logo" src="logo-studios-colombia-header.png" alt="" width="168" height="168">
     </div>
     <div class="intro-text">
       <div class="intro-name">STUDIOS COLOMBIA</div>
@@ -1783,7 +1814,7 @@
 </script>
 
 <header>
-  <div class="logo"><img src="logo-studios-colombia-header.png" alt="Studios Colombia" class="logo-mark"><span id="storeNameDisplay">STUDIOS COLOMBIA</span></div>
+  <div class="logo"><img src="logo-studios-colombia-header.png" alt="Studios Colombia" class="logo-mark" width="72" height="72"><h1 id="storeNameDisplay">STUDIOS COLOMBIA</h1></div>
   <div style="display:flex;align-items:center;gap:14px;">
     <button id="accountBtn" class="btn-account">
       <svg class="btn-account-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -1794,7 +1825,7 @@
 
 <p class="welcome-msg">En Studios Colombia no eres solo un cliente más, eres familia. Te acompañamos en cada paso, con calidez y confianza, para que te sientas como en casa.<svg class="heart-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"></path></svg></p>
 
-<main>
+<main id="main" tabindex="-1">
   <nav class="main-nav-tabs">
     <button class="nav-tab active" id="navCatalogBtn">Catálogo de animaciones</button>
     <button class="nav-tab" id="navCustomBtn">Personalizados y Precios</button>
@@ -1840,7 +1871,7 @@
 </a>
 
 <div id="overlay"></div>
-<div id="cartPanel">
+<div id="cartPanel" role="dialog" aria-modal="true" aria-label="Tu pedido">
   <div class="cart-panel-header">
     <h3>Tu pedido<span class="cart-count-tag" id="cartItemCount"></span></h3>
     <button id="closeCart" aria-label="Cerrar carrito"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -1869,8 +1900,10 @@
         </div>
       </div>
       <div id="custQuickFields" style="display:none;">
-        <input type="text" id="quickName" placeholder="Tu nombre">
-        <input type="text" id="quickWhats" placeholder="Tu WhatsApp (con código de país)">
+        <label for="quickName" class="sr-only">Tu nombre</label>
+        <input type="text" id="quickName" placeholder="Tu nombre" autocomplete="name">
+        <label for="quickWhats" class="sr-only">Tu WhatsApp (con código de país)</label>
+        <input type="tel" id="quickWhats" placeholder="Tu WhatsApp (con código de país)" autocomplete="tel" inputmode="numeric" spellcheck="false">
       </div>
       <button id="sendWhatsapp"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.484-1.77-1.66-2.07-.174-.3-.019-.465.13-.615.136-.135.301-.345.451-.52.146-.181.194-.301.297-.497.1-.21.05-.375-.025-.524-.075-.15-.672-1.62-.922-2.206-.24-.584-.487-.51-.672-.51-.172-.015-.371-.015-.571-.015-.2 0-.523.074-.797.359-.273.3-1.045 1.02-1.045 2.475s1.07 2.865 1.219 3.075c.149.195 2.105 3.195 5.1 4.485.714.3 1.27.48 1.704.629.714.227 1.365.195 1.88.121.574-.091 1.767-.721 2.016-1.426.255-.705.255-1.29.18-1.425-.074-.135-.27-.21-.57-.345m-5.446 7.443h-.016a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg><span>Enviar pedido por WhatsApp</span></button>
     </div>
@@ -1878,12 +1911,12 @@
 </div>
 
 <!-- Customer account modal -->
-<div class="modal-overlay" id="accountModal">
+<div class="modal-overlay" id="accountModal" role="dialog" aria-modal="true" aria-label="Cuenta de cliente">
   <div class="modal-box">
     <!-- Logged out: login / signup -->
     <div id="accountLoggedOut">
       <div class="auth-header">
-        <img src="logo-studios-colombia.png" alt="Studios Colombia" class="auth-logo">
+        <img src="logo-studios-colombia.png" alt="Studios Colombia" class="auth-logo" width="56" height="56">
         <h3 id="accountAuthTitle">Bienvenido de nuevo</h3>
       </div>
 
@@ -1898,21 +1931,21 @@
         <input type="text" id="custWebsite" name="website" tabindex="-1" autocomplete="off">
       </div>
       <div class="field">
-        <label>Correo</label>
+        <label for="custEmail">Correo</label>
         <div class="input-icon-wrap">
           <span class="input-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></span>
-          <input type="text" id="custEmail" placeholder="tucorreo@ejemplo.com">
+          <input type="email" id="custEmail" placeholder="tucorreo@ejemplo.com" autocomplete="email" spellcheck="false">
         </div>
       </div>
       <div class="field">
-        <label>Contraseña</label>
+        <label for="custPassword">Contraseña</label>
         <div class="input-icon-wrap has-toggle">
           <span class="input-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span>
-          <input type="password" id="custPassword" placeholder="Escribe tu contraseña">
+          <input type="password" id="custPassword" placeholder="Escribe tu contraseña" autocomplete="current-password" spellcheck="false">
           <button type="button" class="input-toggle-visibility" id="togglePasswordBtn" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
         </div>
       </div>
-      <div id="accountAuthMsg" class="msg err" style="display:none;"></div>
+      <div id="accountAuthMsg" class="msg err" style="display:none;" aria-live="polite"></div>
       <div class="modal-actions">
         <button class="btn-primary" id="custAuthSubmit">
           <span class="btn-spinner" aria-hidden="true"></span>
@@ -1924,16 +1957,16 @@
 
     <!-- Logged in: profile + order history -->
     <div id="accountLoggedIn" style="display:none;">
-      <h3>Mi cuenta</h3>
+      <h3 id="accountProfileTitle">Mi cuenta</h3>
       <div class="field">
-        <label>Nombre</label>
-        <input type="text" id="custName" placeholder="Tu nombre">
+        <label for="custName">Nombre</label>
+        <input type="text" id="custName" placeholder="Tu nombre" autocomplete="name">
       </div>
       <div class="field">
-        <label>WhatsApp (con código de país, sin +)</label>
-        <input type="text" id="custWhats" placeholder="573001234567">
+        <label for="custWhats">WhatsApp (con código de país, sin +)</label>
+        <input type="tel" id="custWhats" placeholder="573001234567" autocomplete="tel" inputmode="numeric" spellcheck="false">
       </div>
-      <div id="profileMsg" class="msg" style="display:none;"></div>
+      <div id="profileMsg" class="msg" style="display:none;" aria-live="polite"></div>
       <button class="btn-primary" id="saveProfileBtn" style="width:100%;">Guardar datos</button>
 
       <h3 style="margin-top:26px;">Mis pedidos</h3>
@@ -1948,10 +1981,10 @@
 </div>
 
 <!-- Custom options promo popup -->
-<div class="modal-overlay" id="customPromoModal">
+<div class="modal-overlay" id="customPromoModal" role="dialog" aria-modal="true" aria-labelledby="customPromoTitle">
   <div class="modal-box promo-box">
     <button type="button" class="promo-close" id="promoCloseX" aria-label="Cerrar">✕</button>
-    <h3 class="promo-title">¿Sabías que puedes personalizar tu animación?</h3>
+    <h3 class="promo-title" id="customPromoTitle">¿Sabías que puedes personalizar tu animación?</h3>
     <p class="promo-text">Tenemos opciones hechas a tu gusto, con tu estilo y presupuesto. Descúbrelas.</p>
     <div class="modal-actions">
       <button class="btn-primary" id="promoGoCustomBtn">Ver Personalizados y Precios</button>
@@ -2136,11 +2169,11 @@ function renderGrid(){
     grid.innerHTML = emptyStateHtml("No hay animaciones en esta categoría todavía.");
     return;
   }
-  grid.innerHTML = list.map(p => `
+  grid.innerHTML = list.map((p, idx) => `
     <div class="card-wrap">
       <div class="card">
         <div class="thumb-wrap" ${p.videoUrl ? `data-has-video="1" data-video-pid="${p.id}"` : ""}>
-          <div class="thumb-clip"><img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}"></div>
+          <div class="thumb-clip"><img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" width="300" height="300"${idx < 4 ? "" : ` loading="lazy"`}></div>
           <div class="price-tag">
             <div class="price">${formatPrice(p.price)}</div>
             ${formatUsdPriceInline(p.priceUsd)}
@@ -2316,7 +2349,7 @@ function renderCustomGrid(){
     <div class="card-wrap">
       <div class="card">
         <div class="thumb-wrap" ${opt.videoUrl ? `data-has-video="1" data-video-pid="${opt.id}"` : ""}>
-          <div class="thumb-clip">${opt.imageUrl ? `<img src="${escapeHtml(opt.imageUrl)}" alt="${escapeHtml(opt.title)}">` : `<div class="thumb-placeholder"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg></div>`}</div>
+          <div class="thumb-clip">${opt.imageUrl ? `<img src="${escapeHtml(opt.imageUrl)}" alt="${escapeHtml(opt.title)}" width="300" height="533">` : `<div class="thumb-placeholder"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg></div>`}</div>
           <div class="price-tag">
             <div class="price">${formatPrice(opt.price)}</div>
             ${formatUsdPriceInline(opt.priceUsd)}
@@ -2357,8 +2390,7 @@ function positionNavIndicator(){
   if(!nav || !active || !indicator) return;
   const navRect = nav.getBoundingClientRect();
   const tabRect = active.getBoundingClientRect();
-  indicator.style.left = (tabRect.left - navRect.left) + "px";
-  indicator.style.width = tabRect.width + "px";
+  indicator.style.transform = `translateX(${tabRect.left - navRect.left}px) scaleX(${tabRect.width})`;
 }
 window.addEventListener("resize", positionNavIndicator);
 if(document.fonts && document.fonts.ready){
@@ -2512,7 +2544,7 @@ function renderCart(){
       el.className = "cart-row cart-row-entering";
       el.dataset.id = c.id;
       el.innerHTML = `
-        <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}">
+        <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" width="56" height="56">
         <div class="info">
           <div class="info-top">
             <div class="n">${escapeHtml(p.name)}</div>
@@ -2757,6 +2789,61 @@ document.getElementById("customGrid").addEventListener("click", (e) => {
   if(btn){ orderCustomOption(btn.dataset.customOrder); }
 });
 
+// ---------- Accesibilidad de ventanas modales ----------
+// Mientras una ventana (carrito, cuenta, promo) está abierta: el resto de la
+// página queda con `inert` (no navegable con teclado ni con lector de pantalla),
+// el foco entra al abrir y vuelve al botón que la abrió al cerrar.
+let openModalStack = [];
+const modalTriggerEls = new WeakMap();
+// El carrito usa un fondo oscuro aparte (#overlay) que también debe quedar
+// clicable (no "inert") mientras el panel está abierto.
+const MODAL_BACKDROP_IDS = { cartPanel: "overlay" };
+function updateBackgroundInert(){
+  const allowed = new Set(openModalStack);
+  openModalStack.forEach(m => {
+    const backdropId = MODAL_BACKDROP_IDS[m.id];
+    const backdrop = backdropId && document.getElementById(backdropId);
+    if(backdrop) allowed.add(backdrop);
+  });
+  Array.from(document.body.children).forEach(el => {
+    if(allowed.size && !allowed.has(el)){
+      el.setAttribute("inert", "");
+    }else{
+      el.removeAttribute("inert");
+    }
+  });
+}
+function pushModal(modalEl, focusEl){
+  modalTriggerEls.set(modalEl, document.activeElement);
+  openModalStack.push(modalEl);
+  updateBackgroundInert();
+  requestAnimationFrame(() => {
+    const target = focusEl || modalEl.querySelector('input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])');
+    if(target) target.focus();
+  });
+}
+function popModal(modalEl){
+  openModalStack = openModalStack.filter(m => m !== modalEl);
+  updateBackgroundInert();
+  const trigger = modalTriggerEls.get(modalEl);
+  modalTriggerEls.delete(modalEl);
+  if(trigger && typeof trigger.focus === "function") trigger.focus();
+}
+document.addEventListener("keydown", (e) => {
+  if(e.key !== "Escape" || !openModalStack.length) return;
+  const top = openModalStack[openModalStack.length - 1];
+  if(top.id === "cartPanel") closeCart();
+  else if(top.id === "accountModal") hideAccountModal();
+  else if(top.id === "customPromoModal") hideCustomPromoModal();
+});
+// Clic en el fondo oscuro de un .modal-overlay (fuera del cuadro) cierra esa ventana.
+document.getElementById("accountModal").addEventListener("click", (e) => {
+  if(e.target.id === "accountModal") hideAccountModal();
+});
+document.getElementById("customPromoModal").addEventListener("click", (e) => {
+  if(e.target.id === "customPromoModal") hideCustomPromoModal();
+});
+
 function openCartPanel(){
   const panel = document.getElementById("cartPanel");
   const overlay = document.getElementById("overlay");
@@ -2772,6 +2859,7 @@ function openCartPanel(){
       overlay.classList.add("open");
     });
   });
+  pushModal(panel, document.getElementById("closeCart"));
 }
 document.getElementById("cartFab").addEventListener("click", openCartPanel);
 // Botón flotante de consultas rápidas: usa el número configurado en el panel (o el de respaldo).
@@ -2790,6 +2878,7 @@ document.getElementById("cookieOkBtn").addEventListener("click", () => {
 function closeCart(){
   const panel = document.getElementById("cartPanel");
   const overlay = document.getElementById("overlay");
+  popModal(panel);
   panel.style.transition = "transform 0.25s var(--ease-out)";
   overlay.style.transition = "opacity 0.25s var(--ease-out)";
   panel.classList.remove("open");
@@ -2827,17 +2916,20 @@ function showAccountModal(){
   const modal = document.getElementById("accountModal");
   modal.style.display = "flex";
   modal.classList.remove("closing");
+  const loggedOut = document.getElementById("accountLoggedOut").style.display !== "none";
   // Craft detail: the mark wakes up (only for the login/signup view, not the logged-in view).
-  if(document.getElementById("accountLoggedOut").style.display !== "none"){
+  if(loggedOut){
     const logo = modal.querySelector(".auth-logo");
     logo.classList.remove("auth-logo-enter");
     void logo.offsetWidth;
     logo.classList.add("auth-logo-enter");
   }
   requestAnimationFrame(() => modal.classList.add("open"));
+  pushModal(modal, loggedOut ? document.getElementById("custEmail") : document.getElementById("custName"));
 }
 function hideAccountModal(){
   const modal = document.getElementById("accountModal");
+  popModal(modal);
   modal.classList.remove("open");
   modal.classList.add("closing");
   setTimeout(() => {
@@ -2878,6 +2970,7 @@ function updateAuthModeUI(animated){
   const labelEl = document.getElementById("custAuthSubmit").querySelector(".btn-label");
   const newTitle = isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta";
   const newLabel = isLogin ? "Iniciar sesión" : "Registrarme";
+  document.getElementById("custPassword").autocomplete = isLogin ? "current-password" : "new-password";
   if(animated){
     crossfadeText(titleEl, newTitle);
     crossfadeText(labelEl, newLabel);
@@ -2975,7 +3068,7 @@ document.getElementById("custAuthSubmit").addEventListener("click", async () => 
   const originalLabel = labelEl.textContent;
   submitBtn.disabled = true;
   submitBtn.classList.add("loading");
-  labelEl.textContent = authMode === "login" ? "Ingresando..." : "Creando cuenta...";
+  labelEl.textContent = authMode === "login" ? "Ingresando…" : "Creando cuenta…";
 
   const result = authMode === "login"
     ? await sb.auth.signInWithPassword({ email, password })
@@ -3028,9 +3121,11 @@ function showCustomPromoModal(){
   modal.style.display = "flex";
   modal.classList.remove("closing");
   requestAnimationFrame(() => modal.classList.add("open"));
+  pushModal(modal, document.getElementById("promoGoCustomBtn"));
 }
 function hideCustomPromoModal(){
   const modal = document.getElementById("customPromoModal");
+  popModal(modal);
   modal.classList.remove("open");
   modal.classList.add("closing");
   setTimeout(() => {

@@ -6,10 +6,14 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Panel de administrador · STUDIOS COLOMBIA</title>
 <link rel="icon" type="image/png" href="logo-studios-colombia-favicon.png">
+<meta name="theme-color" content="#0B0D12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
 
   :root{
+    color-scheme:dark;
     --bg:#0B0D12;
     --panel:#12161F;
     --panel2:#1A2029;
@@ -253,6 +257,51 @@
 
   #loginSection{max-width:380px;margin:64px auto 0;}
 
+  .sr-only{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
+  /* ---- Confirm delete modal ---- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-top:3px solid var(--red);
+    border-radius:2px;
+    box-shadow:0 24px 60px -12px rgba(0,0,0,0.55);
+    padding:24px;
+    max-width:380px;
+    width:100%;
+  }
+  .modal-box h3{font-size:16px;color:var(--text);margin:0 0 10px;}
+  .modal-box p{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 20px;}
+  .modal-box p b{color:var(--text);}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-actions .btn-secondary, .modal-actions .btn-danger{flex:1;text-align:center;}
+  .btn-danger{
+    background:var(--red);
+    color:#fff;
+    border:none;
+    padding:11px 18px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
   @media (max-width:640px){
     main{padding:20px 14px 60px;}
     .panel-section{padding:18px;}
@@ -267,7 +316,7 @@
 
 <header>
   <div class="brand">
-    <img src="logo-studios-colombia-favicon.png" alt="Studios Colombia">
+    <img src="logo-studios-colombia-favicon.png" alt="Studios Colombia" width="34" height="34">
     <div><span class="gold">STUDIOS</span> COLOMBIA — Admin</div>
   </div>
   <button class="btn-secondary" id="logoutBtn" style="display:none;">Cerrar sesión</button>
@@ -278,14 +327,14 @@
   <div class="panel-section" id="loginSection" style="display:none;">
     <h2>Iniciar sesión de administrador</h2>
     <div class="field">
-      <label>Correo</label>
-      <input type="text" id="loginEmail" placeholder="tucorreo@ejemplo.com">
+      <label for="loginEmail">Correo</label>
+      <input type="email" id="loginEmail" placeholder="tucorreo@ejemplo.com" autocomplete="username" spellcheck="false">
     </div>
     <div class="field">
-      <label>Contraseña</label>
-      <input type="password" id="loginPassword" placeholder="Escribe tu contraseña">
+      <label for="loginPassword">Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="Escribe tu contraseña" autocomplete="current-password">
     </div>
-    <div id="loginMsg" class="msg err" style="display:none;"></div>
+    <div id="loginMsg" class="msg err" style="display:none;" aria-live="polite"></div>
     <button class="btn-primary" id="loginBtn" style="width:100%;">Entrar</button>
   </div>
 
@@ -302,48 +351,51 @@
       <div class="panel-section">
         <h2>🏷️ Categorías</h2>
         <div class="row">
-          <div class="field"><input type="text" id="catName" placeholder="Ej: Alertas de regalo"></div>
+          <div class="field">
+            <label for="catName" class="sr-only">Nombre de la categoría</label>
+            <input type="text" id="catName" placeholder="Ej: Alertas de regalo">
+          </div>
           <button class="btn-primary" id="catAddBtn" style="flex:0 0 auto;padding:10px 16px;">Agregar</button>
         </div>
-        <div id="catMsg" class="msg" style="display:none;"></div>
+        <div id="catMsg" class="msg" style="display:none;" aria-live="polite"></div>
         <div id="catManageList" class="chip-list"></div>
       </div>
 
       <div class="panel-section">
-        <button class="collapsible-toggle" type="button" id="addProductToggle">+ Agregar nueva animación</button>
+        <button class="collapsible-toggle" type="button" id="addProductToggle" aria-expanded="false" aria-controls="addProductBody">+ Agregar nueva animación</button>
         <div class="collapsible-body" id="addProductBody" hidden>
           <div class="field">
-            <label>Nombre del producto</label>
+            <label for="pName">Nombre del producto</label>
             <input type="text" id="pName" placeholder="Ej: Alerta corazón dorado">
           </div>
           <div class="field">
-            <label>Precio (número, ej: 15000)</label>
+            <label for="pPrice">Precio (número, ej: 15000)</label>
             <input type="number" id="pPrice" placeholder="15000">
           </div>
           <div class="field">
-            <label>Precio en dólares (USD, opcional)</label>
+            <label for="pPriceUsd">Precio en dólares (USD, opcional)</label>
             <input type="number" step="0.01" id="pPriceUsd" placeholder="Ej: 4.99">
           </div>
           <div class="field">
-            <label>Categoría</label>
+            <label for="pCategory">Categoría</label>
             <select id="pCategory"></select>
           </div>
           <div class="field">
-            <label>Imagen (foto o miniatura)</label>
+            <label for="pImage">Imagen (foto o miniatura)</label>
             <input type="file" id="pImage" accept="image/*">
             <div class="hint">Se comprime automáticamente para que quepa en el catálogo.</div>
           </div>
           <div class="field">
-            <label>Video del producto (opcional)</label>
+            <label for="pVideoFile">Video del producto (opcional)</label>
             <input type="file" id="pVideoFile" accept="video/*">
             <div class="hint">MP4, MOV, WEBM o MKV. Máximo 20 MB (los videos de alertas suelen ser cortos). Si estás editando y no eliges uno nuevo, se mantiene el video actual.</div>
           </div>
           <div class="field" id="pCurrentPreview" style="display:none;">
             <label>Archivo actual</label>
-            <img id="pCurrentImg" src="" alt="" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
+            <img id="pCurrentImg" src="" alt="" width="70" height="70" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
             <div class="hint" id="pCurrentVideoInfo"></div>
           </div>
-          <div id="addMsg" class="msg" style="display:none;"></div>
+          <div id="addMsg" class="msg" style="display:none;" aria-live="polite"></div>
           <div style="display:flex;gap:8px;">
             <button class="btn-primary" id="pAddBtn" style="flex:1;">Agregar al catálogo</button>
             <button class="btn-secondary" id="pCancelBtn" type="button" style="display:none;flex:0 0 auto;">Cancelar</button>
@@ -374,39 +426,39 @@
     <div class="tab-content" data-tabcontent="personalizados" hidden>
 
       <div class="panel-section">
-        <button class="collapsible-toggle" type="button" id="addCustomOptionToggle">+ Agregar / editar opción</button>
+        <button class="collapsible-toggle" type="button" id="addCustomOptionToggle" aria-expanded="false" aria-controls="addCustomOptionBody">+ Agregar / editar opción</button>
         <div class="collapsible-body" id="addCustomOptionBody" hidden>
           <div class="field">
-            <label>Título</label>
+            <label for="coTitle">Título</label>
             <input type="text" id="coTitle" placeholder="Ej: Personalizado básico">
           </div>
           <div class="field">
-            <label>Descripción</label>
+            <label for="coDescription">Descripción</label>
             <input type="text" id="coDescription" placeholder="Qué incluye esta opción">
           </div>
           <div class="field">
-            <label>Precio (número, ej: 25000)</label>
+            <label for="coPrice">Precio (número, ej: 25000)</label>
             <input type="number" id="coPrice" placeholder="25000">
           </div>
           <div class="field">
-            <label>Precio en dólares (USD, opcional)</label>
+            <label for="coPriceUsd">Precio en dólares (USD, opcional)</label>
             <input type="number" step="0.01" id="coPriceUsd" placeholder="Ej: 6.99">
           </div>
           <div class="field">
-            <label>Imagen de portada (opcional)</label>
+            <label for="coImage">Imagen de portada (opcional)</label>
             <input type="file" id="coImage" accept="image/*">
             <div class="hint">Se comprime automáticamente. Si estás editando y no subes una nueva, se mantiene la imagen actual.</div>
           </div>
           <div class="field">
-            <label>Link del video de ejemplo (opcional)</label>
-            <input type="text" id="coVideoUrl" placeholder="https://drive.google.com/... o https://youtube.com/...">
+            <label for="coVideoUrl">Link del video de ejemplo (opcional)</label>
+            <input type="url" id="coVideoUrl" placeholder="https://drive.google.com/… o https://youtube.com/…">
             <div class="hint">Pega el link para compartir (Google Drive, YouTube, etc.). Se muestra embebido cuando es posible.</div>
           </div>
           <div class="field" id="coCurrentPreview" style="display:none;">
             <label>Imagen actual</label>
-            <img id="coCurrentImg" src="" alt="" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;">
+            <img id="coCurrentImg" src="" alt="" width="70" height="70" style="width:70px;height:70px;object-fit:cover;border:1px solid var(--border);display:block;">
           </div>
-          <div id="coMsg" class="msg" style="display:none;"></div>
+          <div id="coMsg" class="msg" style="display:none;" aria-live="polite"></div>
           <div style="display:flex;gap:8px;">
             <button class="btn-primary" id="coAddBtn" style="flex:1;">Agregar opción</button>
             <button class="btn-secondary" id="coCancelBtn" type="button" style="display:none;flex:0 0 auto;">Cancelar</button>
@@ -426,19 +478,19 @@
       <div class="panel-section">
         <h2>⚙️ Ajustes de la tienda</h2>
         <div class="field">
-          <label>Nombre de la tienda</label>
+          <label for="sName">Nombre de la tienda</label>
           <input type="text" id="sName">
         </div>
         <div class="field">
-          <label>Texto del banner de promoción</label>
+          <label for="sPromo">Texto del banner de promoción</label>
           <input type="text" id="sPromo">
         </div>
         <div class="field">
-          <label>Número de WhatsApp (con código de país, sin +)</label>
-          <input type="text" id="sWhats">
+          <label for="sWhats">Número de WhatsApp (con código de país, sin +)</label>
+          <input type="tel" id="sWhats" autocomplete="tel" inputmode="numeric" spellcheck="false">
         </div>
         <button class="btn-primary" id="saveSettingsBtn" style="width:100%;">Guardar ajustes</button>
-        <div id="settingsMsg" class="msg" style="display:none;"></div>
+        <div id="settingsMsg" class="msg" style="display:none;" aria-live="polite"></div>
       </div>
 
     </div>
@@ -446,6 +498,17 @@
   </div>
 
 </main>
+
+<div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+  <div class="modal-box">
+    <h3 id="confirmModalTitle">¿Eliminar esto?</h3>
+    <p id="confirmModalText"></p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="confirmModalCancel" type="button">Cancelar</button>
+      <button class="btn-danger" id="confirmModalConfirm" type="button">Eliminar</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js" integrity="sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP" crossorigin="anonymous"></script>
 <script>
@@ -499,6 +562,44 @@ function escapeHtml(str){
     .replace(/'/g, "&#39;");
 }
 
+// ---------- Confirm delete modal ----------
+// Reemplaza confirm() del navegador: foco se mueve a la ventana al abrir,
+// el resto de la página queda "inert" (no navegable con teclado), Escape y
+// clic afuera cierran, y el foco vuelve al botón que la abrió.
+let confirmModalTrigger = null;
+let confirmModalAction = null;
+function openConfirmModal(message, onConfirm){
+  confirmModalTrigger = document.activeElement;
+  confirmModalAction = onConfirm;
+  document.getElementById("confirmModalText").textContent = message;
+  const modal = document.getElementById("confirmModal");
+  modal.classList.add("open");
+  Array.from(document.body.children).forEach(el => {
+    if(el !== modal) el.setAttribute("inert", "");
+  });
+  requestAnimationFrame(() => document.getElementById("confirmModalCancel").focus());
+}
+function closeConfirmModal(){
+  const modal = document.getElementById("confirmModal");
+  modal.classList.remove("open");
+  Array.from(document.body.children).forEach(el => el.removeAttribute("inert"));
+  confirmModalAction = null;
+  if(confirmModalTrigger && typeof confirmModalTrigger.focus === "function") confirmModalTrigger.focus();
+  confirmModalTrigger = null;
+}
+document.getElementById("confirmModalCancel").addEventListener("click", closeConfirmModal);
+document.getElementById("confirmModalConfirm").addEventListener("click", async () => {
+  const action = confirmModalAction;
+  closeConfirmModal();
+  if(action) await action();
+});
+document.getElementById("confirmModal").addEventListener("click", (e) => {
+  if(e.target.id === "confirmModal") closeConfirmModal();
+});
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && document.getElementById("confirmModal").classList.contains("open")) closeConfirmModal();
+});
+
 // ---------- Tabs ----------
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -518,6 +619,7 @@ function setupCollapsible(toggleId, bodyId){
   toggle.addEventListener("click", () => {
     body.hidden = !body.hidden;
     toggle.classList.toggle("open", !body.hidden);
+    toggle.setAttribute("aria-expanded", String(!body.hidden));
   });
 }
 setupCollapsible("addProductToggle", "addProductBody");
@@ -526,6 +628,7 @@ setupCollapsible("addCustomOptionToggle", "addCustomOptionBody");
 function openCustomOptionForm(){
   document.getElementById("addCustomOptionBody").hidden = false;
   document.getElementById("addCustomOptionToggle").classList.add("open");
+  document.getElementById("addCustomOptionToggle").setAttribute("aria-expanded", "true");
 }
 
 // ---------- Product edit form ----------
@@ -576,6 +679,7 @@ function openProductEditForm(p){
 
   document.getElementById("addProductBody").hidden = false;
   document.getElementById("addProductToggle").classList.add("open");
+  document.getElementById("addProductToggle").setAttribute("aria-expanded", "true");
   document.getElementById("addProductToggle").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -634,20 +738,20 @@ function renderAdminList(){
   }
   el.innerHTML = products.map(p => `
     <tr>
-      <td><img src="${escapeHtml(p.image || '')}" alt=""></td>
+      <td><img src="${escapeHtml(p.image || '')}" alt="" width="40" height="40"></td>
       <td>${escapeHtml(p.name)}${p.videoUrl ? " 🎬" : ""}</td>
       <td>${formatPrice(p.price)}${p.priceUsd !== null && p.priceUsd !== undefined && p.priceUsd !== "" ? `<br><span class="hint">${formatUsdPrice(p.priceUsd)}</span>` : ""}</td>
-      <td><select data-catprod="${p.id}">${categoryOptionsHtml(p.categoryId || "")}</select></td>
+      <td><select data-catprod="${p.id}" aria-label="Categoría de ${escapeHtml(p.name)}">${categoryOptionsHtml(p.categoryId || "")}</select></td>
       <td class="actions-cell">
-        <label class="video-upload-btn" title="Subir / reemplazar video">
-          🎬
+        <label class="video-upload-btn" aria-label="Subir o reemplazar video de ${escapeHtml(p.name)}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="15" height="14" rx="2"></rect><path d="M17 10l5-3v10l-5-3"></path></svg>
           <input type="file" accept="video/*" data-videoprod="${p.id}" style="display:none;">
         </label>
         <button class="edit-btn" data-editprod="${p.id}" title="Editar producto">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
           Editar
         </button>
-        <button data-del="${p.id}">Eliminar</button>
+        <button data-del="${p.id}" data-delname="${escapeHtml(p.name)}">Eliminar</button>
       </td>
     </tr>
   `).join("");
@@ -660,7 +764,7 @@ function renderCatManageList(){
     return;
   }
   el.innerHTML = categories.map(c => `
-    <span class="chip">${escapeHtml(c.name)}<button data-delcat="${c.id}" aria-label="Eliminar categoría" title="Eliminar categoría">×</button></span>
+    <span class="chip">${escapeHtml(c.name)}<button data-delcat="${c.id}" data-delname="${escapeHtml(c.name)}" aria-label="Eliminar categoría ${escapeHtml(c.name)}" title="Eliminar categoría">×</button></span>
   `).join("");
 }
 
@@ -684,8 +788,8 @@ function renderCustomOptionsList(){
       <div class="co-card-header">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;">
           ${o.image_url
-            ? `<img src="${escapeHtml(o.image_url)}" alt="" style="width:40px;height:40px;object-fit:cover;flex-shrink:0;">`
-            : `<div style="width:40px;height:40px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);">🖼️</div>`}
+            ? `<img src="${escapeHtml(o.image_url)}" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:cover;flex-shrink:0;">`
+            : `<div style="width:40px;height:40px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);" aria-hidden="true">🖼️</div>`}
           <span class="co-title">${escapeHtml(o.title)}</span>
         </div>
         <span class="co-price">${formatPrice(o.price)}${o.price_usd !== null && o.price_usd !== undefined && o.price_usd !== "" ? ` <span class="hint">(${formatUsdPrice(o.price_usd)})</span>` : ""}</span>
@@ -693,7 +797,7 @@ function renderCustomOptionsList(){
       <div class="co-desc">${escapeHtml(truncate(o.description || "Sin descripción", 90))} · ${o.video_url ? "🎬 con video" : "sin video"}</div>
       <div class="co-actions">
         <button class="edit-btn" data-editco="${o.id}">Editar</button>
-        <button data-delco="${o.id}">Eliminar</button>
+        <button data-delco="${o.id}" data-delname="${escapeHtml(o.title)}">Eliminar</button>
       </div>
     </div>
   `).join("");
@@ -828,7 +932,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
   }
 
   msgEl.className = "msg";
-  msgEl.textContent = file ? "Procesando imagen..." : "Guardando...";
+  msgEl.textContent = file ? "Procesando imagen…" : "Guardando…";
   msgEl.style.display = "block";
 
   try{
@@ -836,7 +940,7 @@ document.getElementById("pAddBtn").addEventListener("click", async () => {
 
     let videoUrl = null;
     if(videoFile){
-      msgEl.textContent = "Subiendo video...";
+      msgEl.textContent = "Subiendo video…";
       videoUrl = await uploadVideo(videoFile);
     }
 
@@ -917,11 +1021,14 @@ document.getElementById("adminList").addEventListener("click", async (e) => {
   const b = e.target.closest("button[data-del]");
   if(!b) return;
   const id = b.dataset.del;
-  const { error } = await sb.from("products").delete().eq("id", id);
-  if(error) return;
-  products = products.filter(p => p.id !== id);
-  if(editingProductId === id) resetProductForm();
-  renderAdminList();
+  const name = b.dataset.delname || "este producto";
+  openConfirmModal(`Vas a eliminar "${name}" del catálogo. Esta acción no se puede deshacer.`, async () => {
+    const { error } = await sb.from("products").delete().eq("id", id);
+    if(error) return;
+    products = products.filter(p => p.id !== id);
+    if(editingProductId === id) resetProductForm();
+    renderAdminList();
+  });
 });
 
 document.getElementById("adminList").addEventListener("change", async (e) => {
@@ -988,13 +1095,16 @@ document.getElementById("catManageList").addEventListener("click", async (e) => 
   const b = e.target.closest("button[data-delcat]");
   if(!b) return;
   const id = b.dataset.delcat;
-  const { error } = await sb.from("categories").delete().eq("id", id);
-  if(error) return;
-  categories = categories.filter(c => c.id !== id);
-  await loadProducts(); // la BD ya puso category_id en null vía ON DELETE SET NULL
-  renderCatManageList();
-  document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
-  renderAdminList();
+  const name = b.dataset.delname || "esta categoría";
+  openConfirmModal(`Vas a eliminar la categoría "${name}". Los productos que la usan quedarán sin categoría. Esta acción no se puede deshacer.`, async () => {
+    const { error } = await sb.from("categories").delete().eq("id", id);
+    if(error) return;
+    categories = categories.filter(c => c.id !== id);
+    await loadProducts(); // la BD ya puso category_id en null vía ON DELETE SET NULL
+    renderCatManageList();
+    document.getElementById("pCategory").innerHTML = categoryOptionsHtml("");
+    renderAdminList();
+  });
 });
 
 document.getElementById("coAddBtn").addEventListener("click", async () => {
@@ -1023,7 +1133,7 @@ document.getElementById("coAddBtn").addEventListener("click", async () => {
 
   if(imageFile){
     msgEl.className = "msg";
-    msgEl.textContent = "Procesando imagen...";
+    msgEl.textContent = "Procesando imagen…";
     msgEl.style.display = "block";
     try{
       payload.image_url = await compressImage(imageFile);
@@ -1098,14 +1208,17 @@ document.getElementById("customOptionsList").addEventListener("click", async (e)
   const delBtn = e.target.closest("button[data-delco]");
   if(delBtn){
     const id = delBtn.dataset.delco;
-    const { error } = await sb.from("custom_options").delete().eq("id", id);
-    if(error) return;
-    customOptions = customOptions.filter(o => o.id !== id);
-    if(editingCustomOptionId === id){
-      resetCustomOptionForm();
-      document.getElementById("coMsg").style.display = "none";
-    }
-    renderCustomOptionsList();
+    const name = delBtn.dataset.delname || "esta opción";
+    openConfirmModal(`Vas a eliminar la opción personalizada "${name}". Esta acción no se puede deshacer.`, async () => {
+      const { error } = await sb.from("custom_options").delete().eq("id", id);
+      if(error) return;
+      customOptions = customOptions.filter(o => o.id !== id);
+      if(editingCustomOptionId === id){
+        resetCustomOptionForm();
+        document.getElementById("coMsg").style.display = "none";
+      }
+      renderCustomOptionsList();
+    });
   }
 });
 
